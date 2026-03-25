@@ -34,13 +34,20 @@ interface UserRecord {
   password: string;
 }
 
+const defaultBranches: Branch[] = [
+  { id: 1, cadena: "Corazón de Alcachofa", nombre: "Andares" },
+  { id: 2, cadena: "Corazón de Alcachofa", nombre: "Punto Sao Paulo" },
+  { id: 3, cadena: "Corazón de Alcachofa", nombre: "Andares" },
+  { id: 4, cadena: "Kokoro", nombre: "Punto Sao Paulo" },
+];
+
 const mockUsers: UserRecord[] = Array.from({ length: 160 }, (_, i) => ({
   id: i + 1,
   email: "johndoe@correo.com",
   role: ["Admin", "Tesorería", "Socio"][i % 3],
   createdAt: "00/00/0000",
   active: true,
-  branches: 4,
+  branches: [...defaultBranches],
   password: "Pass1234!",
 }));
 
