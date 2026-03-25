@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Filter, Copy, Trash2, ChevronDown, ArrowLeft } from "lucide-react";
+import { Filter, Copy, Trash2, ChevronDown, ArrowLeft, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
