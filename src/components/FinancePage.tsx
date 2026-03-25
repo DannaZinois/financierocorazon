@@ -54,7 +54,68 @@ const mockRows = [
   ["150000", "32000", "45000", "28000", "30%", "12000", "138000", "89000", "64%", "49000", "35%"],
 ];
 
-const FinancePage = () => {
+const MultiCheckDropdown = ({
+  label,
+  labelClass,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  labelClass?: string;
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const toggle = (val: string) => {
+    onChange(
+      selected.includes(val) ? selected.filter((x) => x !== val) : [...selected, val]
+    );
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <p className={`text-sm font-medium mb-1 ${labelClass ?? "text-foreground"}`}>{label}</p>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-48 border border-input rounded-md bg-card px-3 py-2 text-sm"
+      >
+        <span className="truncate text-muted-foreground">
+          {selected.length > 0 ? selected.join(", ") : "Selecciona"}
+        </span>
+        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 w-48 border border-input rounded-md bg-card shadow-lg p-2 max-h-48 overflow-auto space-y-1">
+          {options.map((o) => (
+            <label key={o} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary rounded px-1 py-0.5">
+              <input
+                type="checkbox"
+                checked={selected.includes(o)}
+                onChange={() => toggle(o)}
+                className="accent-primary"
+              />
+              {o}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+
   const [cadenaFilter, setCadenaFilter] = useState<string>("");
   const [locFilter, setLocFilter] = useState<string>("");
   const [selectedBranch, setSelectedBranch] = useState<BranchCard | null>(null);
