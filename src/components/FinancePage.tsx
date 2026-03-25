@@ -134,6 +134,7 @@ const FinancePage = () => {
   const [selectedBranch, setSelectedBranch] = useState<BranchCard | null>(null);
   const [selectedMeses, setSelectedMeses] = useState<string[]>([]);
   const [selectedAños, setSelectedAños] = useState<string[]>([]);
+  const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
 
   const filtered = mockBranches.filter((b) => {
     if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
