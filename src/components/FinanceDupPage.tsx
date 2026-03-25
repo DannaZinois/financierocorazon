@@ -919,8 +919,9 @@ const FinanceDupPage = () => {
             {displayExistente.map((doc) => (
               <TableRow key={doc.id}>
                 <TableCell className="text-foreground">
-                  {doc.cadena} - {doc.localizacion}
-                  {doc.copyLabel && <span className="ml-2 text-muted-foreground text-xs">({doc.copyLabel})</span>}
+                  <div className="font-semibold">{doc.cadena} - {doc.localizacion}</div>
+                  <div className="text-muted-foreground text-xs">{doc.mes} {doc.año}</div>
+                  {doc.copyLabel && <span className="text-muted-foreground text-xs">({doc.copyLabel})</span>}
                 </TableCell>
                 <TableCell className="text-foreground">{doc.fecha}</TableCell>
                 <TableCell className="text-foreground">{doc.usuario}</TableCell>
