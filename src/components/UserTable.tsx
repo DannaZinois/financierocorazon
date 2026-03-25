@@ -138,15 +138,12 @@ const UserTable = () => {
                 <TableCell>{user.createdAt}</TableCell>
                 <TableCell>
                   <div className="inline-flex items-center gap-2">
-                    {visiblePasswords.has(user.id) ? (
-                      <Input
-                        value={user.password}
-                        onChange={(e) => updatePassword(user.id, e.target.value)}
-                        className="h-7 w-32 text-sm"
-                      />
-                    ) : (
-                      <span className="text-sm text-muted-foreground">••••••••</span>
-                    )}
+                    <Input
+                      type={visiblePasswords.has(user.id) ? "text" : "password"}
+                      value={user.password}
+                      onChange={(e) => updatePassword(user.id, e.target.value)}
+                      className="h-7 w-32 text-sm"
+                    />
                     <button
                       onClick={() => togglePasswordVisibility(user.id)}
                       className="hover:opacity-80 transition-opacity"
