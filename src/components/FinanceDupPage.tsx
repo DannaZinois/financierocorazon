@@ -748,10 +748,9 @@ const FinanceDupPage = () => {
                 </TableCell>
               </TableRow>
             )}
-            </Table>
-          </div>
-        </>
-      )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
