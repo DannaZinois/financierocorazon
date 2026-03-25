@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Users, DollarSign, Copy, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,9 +13,12 @@ const items: SidebarItem[] = [
   { id: "finance-dup", label: "Financiero: Duplicar y aislar", icon: Copy },
 ];
 
-const AppSidebar = () => {
-  const [activeId, setActiveId] = useState("users");
+interface AppSidebarProps {
+  activeId: string;
+  onSelect: (id: string) => void;
+}
 
+const AppSidebar = ({ activeId, onSelect }: AppSidebarProps) => {
   return (
     <aside className="w-44 min-h-screen bg-sidebar flex flex-col border-r border-sidebar-border">
       <nav className="flex-1 py-4 space-y-1">
@@ -26,7 +28,7 @@ const AppSidebar = () => {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveId(item.id)}
+              onClick={() => onSelect(item.id)}
               className={cn(
                 "flex items-center gap-3 w-full px-3 py-3 text-sm transition-all",
                 isActive
