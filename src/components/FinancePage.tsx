@@ -358,7 +358,7 @@ const FinancePage = () => {
                                   "text-sm text-foreground",
                                   !isPct && "cursor-pointer hover:bg-secondary/50"
                                 )}
-                                onClick={() => { if (!isPct) setDesgloseCol(col); }}
+                                onClick={() => { if (!isPct) { setDesgloseCol(col); setDesglosePeriod({ mes, año }); } }}
                               >
                                 {displayVal}
                               </TableCell>
