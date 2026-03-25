@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Search, Eye, ChevronLeft, ChevronRight, Info, KeyRound } from "lucide-react";
+import { Search, Eye, EyeOff, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import {
   Table,
