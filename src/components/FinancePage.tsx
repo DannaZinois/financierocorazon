@@ -58,8 +58,8 @@ const FinancePage = () => {
   const [cadenaFilter, setCadenaFilter] = useState<string>("");
   const [locFilter, setLocFilter] = useState<string>("");
   const [selectedBranch, setSelectedBranch] = useState<BranchCard | null>(null);
-  const [selectedMes, setSelectedMes] = useState<string>("");
-  const [selectedAño, setSelectedAño] = useState<string>("");
+  const [selectedMeses, setSelectedMeses] = useState<string[]>([]);
+  const [selectedAños, setSelectedAños] = useState<string[]>([]);
 
   const filtered = mockBranches.filter((b) => {
     if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
