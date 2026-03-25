@@ -528,7 +528,7 @@ const FinanceDupPage = () => {
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <Checkbox
                   checked={mode === "existente"}
-                  onCheckedChange={() => setMode("existente")}
+                  onCheckedChange={() => handleModeChange("existente")}
                 />
                 Existente
               </label>
