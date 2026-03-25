@@ -631,7 +631,7 @@ const FinanceDupPage = () => {
 
       {/* Cambios detail table */}
       {expandedCambios !== null && (() => {
-        const doc = filteredExistente.find((d) => d.id === expandedCambios);
+        const doc = displayExistente.find((d) => d.id === expandedCambios);
         if (!doc) return null;
         const cambiosData = generarCambios(doc.mes, doc.año);
         return (
