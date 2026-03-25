@@ -289,9 +289,11 @@ const buildDesgloseRows = (col: string, mes: string, año: string): DesgloseRow[
 const FileDetailView = ({
   doc,
   onBack,
+  allDocs,
 }: {
   doc: DocRow;
-  onBack: () => void;
+  onBack: (addedCount: number) => void;
+  allDocs: DocRow[];
 }) => {
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
@@ -299,13 +301,68 @@ const FileDetailView = ({
   const [tableValues, setTableValues] = useState<string[]>([...mockRows[0]]);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
 
+  // Filters
+  const [fCadena, setFCadena] = useState<string>("");
+  const [fLoc, setFLoc] = useState<string>("");
+  const [fMeses, setFMeses] = useState<string[]>([]);
+  const [fAños, setFAños] = useState<string[]>([]);
+  const [mesDropOpen, setMesDropOpen] = useState(false);
+  const [añoDropOpen, setAñoDropOpen] = useState(false);
+  const mesRef = useRef<HTMLDivElement>(null);
+  const añoRef = useRef<HTMLDivElement>(null);
+
+  // Extra added tables
+  const [addedDocs, setAddedDocs] = useState<DocRow[]>([]);
+  const [addedTableValues, setAddedTableValues] = useState<Record<number, string[]>>({});
+  const [addedDesgloseCol, setAddedDesgloseCol] = useState<{ docId: number; col: string } | null>(null);
+  const [addedDesgloseRows, setAddedDesgloseRows] = useState<DesgloseRow[]>([]);
+  const [addedEditingRowId, setAddedEditingRowId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (mesRef.current && !mesRef.current.contains(e.target as Node)) setMesDropOpen(false);
+      if (añoRef.current && !añoRef.current.contains(e.target as Node)) setAñoDropOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleSearch = () => {
+    const filtered = allDocs.filter((d) => {
+      if (d.id === doc.id) return false;
+      if (fCadena && fCadena !== "__all__" && d.cadena !== fCadena) return false;
+      if (fLoc && fLoc !== "__all__" && d.localizacion !== fLoc) return false;
+      if (fMeses.length > 0 && !fMeses.includes(d.mes)) return false;
+      if (fAños.length > 0 && !fAños.includes(d.año)) return false;
+      return true;
+    });
+    setAddedDocs((prev) => {
+      const existingIds = new Set(prev.map((r) => r.id));
+      const newOnes = filtered.filter((d) => !existingIds.has(d.id));
+      const newValues: Record<number, string[]> = {};
+      newOnes.forEach((d) => { newValues[d.id] = [...mockRows[0]]; });
+      setAddedTableValues((pv) => ({ ...pv, ...newValues }));
+      return [...prev, ...newOnes];
+    });
+  };
+
+  const toggleMes = (m: string) => setFMeses((prev) => prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]);
+  const toggleAño = (a: string) => setFAños((prev) => prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]);
+
   const handleOpenDesglose = (col: string) => {
-    if (desgloseCol === col) {
-      setDesgloseCol(null);
-      return;
-    }
+    if (desgloseCol === col) { setDesgloseCol(null); return; }
     setDesgloseCol(col);
     setDesgloseRows(buildDesgloseRows(col, doc.mes, doc.año));
+    setAddedDesgloseCol(null);
+  };
+
+  const handleOpenAddedDesglose = (docId: number, col: string, addedDoc: DocRow) => {
+    if (addedDesgloseCol?.docId === docId && addedDesgloseCol?.col === col) {
+      setAddedDesgloseCol(null); return;
+    }
+    setAddedDesgloseCol({ docId, col });
+    setAddedDesgloseRows(buildDesgloseRows(col, addedDoc.mes, addedDoc.año));
+    setDesgloseCol(null);
   };
 
   const getColIndex = (col: string) => financeColumns.indexOf(col);
@@ -321,27 +378,51 @@ const FileDetailView = ({
     });
   };
 
+  const updateAddedParentValue = (docId: number, col: string, delta: number) => {
+    const idx = getColIndex(col);
+    if (idx < 0) return;
+    setAddedTableValues((prev) => {
+      const vals = [...(prev[docId] || mockRows[0])];
+      const current = parseInt(vals[idx].replace(/[%$,]/g, "")) || 0;
+      vals[idx] = String(current + delta);
+      return { ...prev, [docId]: vals };
+    });
+  };
+
   const addRow = () => {
     if (!desgloseCol) return;
     const mesIdx = parseInt(mesIndex[doc.mes]);
     const newRow: DesgloseRow = {
-      id: desgloseNextId++,
-      nombre: "Nombre aquí",
-      cantidadNueva: 0,
-      cantidadAnterior: 0,
-      tipo: "fijo",
-      comentario: "Comentario",
-      usuario: "Usuario",
+      id: desgloseNextId++, nombre: "Nombre aquí", cantidadNueva: 0, cantidadAnterior: 0,
+      tipo: "fijo", comentario: "Comentario", usuario: "Usuario",
       fecha: `01/${String(mesIdx).padStart(2, "0")}/${doc.año}`,
     };
     setDesgloseRows((prev) => [...prev, newRow]);
     setEditingRowId(newRow.id);
   };
 
+  const addAddedRow = (docId: number, addedDoc: DocRow) => {
+    if (!addedDesgloseCol) return;
+    const mesIdx = parseInt(mesIndex[addedDoc.mes]);
+    const newRow: DesgloseRow = {
+      id: desgloseNextId++, nombre: "Nombre aquí", cantidadNueva: 0, cantidadAnterior: 0,
+      tipo: "fijo", comentario: "Comentario", usuario: "Usuario",
+      fecha: `01/${String(mesIdx).padStart(2, "0")}/${addedDoc.año}`,
+    };
+    setAddedDesgloseRows((prev) => [...prev, newRow]);
+    setAddedEditingRowId(newRow.id);
+  };
+
   const deleteRow = (row: DesgloseRow) => {
     if (!desgloseCol) return;
     setDesgloseRows((prev) => prev.filter((r) => r.id !== row.id));
     updateParentValue(desgloseCol, -row.cantidadNueva);
+  };
+
+  const deleteAddedRow = (row: DesgloseRow, docId: number) => {
+    if (!addedDesgloseCol) return;
+    setAddedDesgloseRows((prev) => prev.filter((r) => r.id !== row.id));
+    updateAddedParentValue(docId, addedDesgloseCol.col, -row.cantidadNueva);
   };
 
   const updateRow = (id: number, field: keyof DesgloseRow, value: string | number) => {
@@ -359,54 +440,213 @@ const FileDetailView = ({
     );
   };
 
+  const updateAddedRow = (id: number, field: keyof DesgloseRow, value: string | number, docId: number) => {
+    setAddedDesgloseRows((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r;
+        if (field === "cantidadNueva" && addedDesgloseCol) {
+          const oldVal = r.cantidadNueva;
+          const newVal = typeof value === "number" ? value : parseInt(value) || 0;
+          updateAddedParentValue(docId, addedDesgloseCol.col, newVal - oldVal);
+          return { ...r, cantidadNueva: newVal };
+        }
+        return { ...r, [field]: value };
+      })
+    );
+  };
+
+  const renderDesgloseTable = (
+    col: string,
+    rows: DesgloseRow[],
+    editId: number | null,
+    setEditId: (id: number | null) => void,
+    onAdd: () => void,
+    onDelete: (row: DesgloseRow) => void,
+    onUpdate: (id: number, field: keyof DesgloseRow, value: string | number) => void,
+    onClose: () => void,
+  ) => (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-2xl font-bold text-foreground">Desglose: {col}</h3>
+        <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={onAdd}>
+          Agregar dato
+        </Button>
+      </div>
+      <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-secondary">
+              <TableHead className="font-semibold text-foreground">Nombre de dato</TableHead>
+              <TableHead className="font-semibold text-foreground">Cantidad nueva</TableHead>
+              <TableHead className="font-semibold text-foreground">Cantidad anterior</TableHead>
+              <TableHead className="font-semibold text-foreground">Tipo</TableHead>
+              <TableHead className="font-semibold text-foreground">Comentario</TableHead>
+              <TableHead className="font-semibold text-foreground">Usuario</TableHead>
+              <TableHead className="font-semibold text-foreground">Fecha de último cambio</TableHead>
+              <TableHead className="font-semibold text-foreground">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => {
+              const isEditing = editId === row.id;
+              return (
+                <TableRow key={row.id}>
+                  <TableCell>{isEditing ? <input className="border border-input rounded px-2 py-1 text-sm bg-background w-full" value={row.nombre} onChange={(e) => onUpdate(row.id, "nombre", e.target.value)} /> : <span className="text-muted-foreground text-sm">{row.nombre}</span>}</TableCell>
+                  <TableCell>{isEditing ? <input type="number" className="border border-input rounded px-2 py-1 text-sm bg-background w-24" value={row.cantidadNueva} onChange={(e) => onUpdate(row.id, "cantidadNueva", parseInt(e.target.value) || 0)} /> : <span className="text-foreground text-sm">${row.cantidadNueva.toLocaleString()}</span>}</TableCell>
+                  <TableCell className="text-foreground text-sm">${row.cantidadAnterior.toLocaleString()}</TableCell>
+                  <TableCell>{isEditing ? <select className="border border-input rounded px-2 py-1 text-sm bg-background" value={row.tipo} onChange={(e) => onUpdate(row.id, "tipo", e.target.value)}><option value="fijo">Fijo</option><option value="operativo">Operativo</option><option value="extraordinario">Extraordinario</option></select> : <span className="text-foreground text-sm capitalize">{row.tipo}</span>}</TableCell>
+                  <TableCell>{isEditing ? <input className="border border-input rounded px-2 py-1 text-sm bg-background w-full" value={row.comentario} onChange={(e) => onUpdate(row.id, "comentario", e.target.value)} /> : <span className="text-muted-foreground text-sm">{row.comentario.slice(0, 25)}...</span>}</TableCell>
+                  <TableCell className="text-foreground text-sm">{row.usuario}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">{row.fecha}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <button className="p-1.5 rounded hover:bg-accent text-orange-500" title={isEditing ? "Guardar" : "Editar"} onClick={() => setEditId(isEditing ? null : row.id)}><Pencil className="w-5 h-5" /></button>
+                      <button className="p-1.5 rounded hover:bg-destructive/10 text-destructive" title="Borrar" onClick={() => onDelete(row)}><Trash2 className="w-5 h-5" /></button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex justify-end gap-4 mt-4">
+        <Button variant="outline" className="rounded-full border-destructive text-destructive hover:bg-destructive/10 px-6" onClick={onClose}>Cancelar</Button>
+        <Button className="rounded-full bg-sidebar hover:bg-sidebar/90 text-sidebar-foreground px-6" onClick={onClose}>Guardar</Button>
+      </div>
+    </div>
+  );
+
+  const renderFinanceTable = (
+    values: string[],
+    onCellClick: (col: string) => void,
+    activeCol: string | null,
+  ) => (
+    <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-secondary">
+            {financeColumns.map((col) => (
+              <TableHead key={col} className="font-semibold text-foreground text-xs whitespace-nowrap">{col}</TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            {values.map((cell, j) => {
+              const col = financeColumns[j];
+              const isPct = isPercentColumn(col);
+              const displayVal = isPct ? cell : `$${parseInt(cell.replace(/[%$,]/g, "") || "0").toLocaleString()}`;
+              return (
+                <TableCell key={j} className={cn("text-sm text-foreground", !isPct && "cursor-pointer hover:bg-secondary/50", activeCol === col && "bg-secondary/50 font-semibold")} onClick={() => { if (!isPct) onCellClick(col); }}>
+                  {displayVal}
+                </TableCell>
+              );
+            })}
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+  );
+
   return (
     <div className="flex-1 p-8 overflow-auto">
       <button
-        onClick={onBack}
+        onClick={() => onBack(addedDocs.length)}
         className="flex items-center gap-2 text-primary hover:underline mb-6 text-sm font-medium"
       >
         <ArrowLeft className="w-4 h-4" /> Regresar
       </button>
 
-      <h1
-        className="text-3xl font-bold text-foreground mb-1"
-        style={{ fontFamily: '"Myanmar MN", sans-serif' }}
-      >
+      <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: '"Myanmar MN", sans-serif' }}>
         {doc.cadena} - {doc.localizacion}
       </h1>
-      <p className="text-muted-foreground mb-8">
+      <p className="text-muted-foreground mb-6">
         Archivo financiero: {doc.mes} {doc.año}
       </p>
 
+      {/* Filters */}
+      <div className="bg-card rounded-lg border border-border p-5 mb-8 shadow-md">
+        <div className="flex flex-wrap items-start gap-6 mb-4">
+          <div className="min-w-[180px]">
+            <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Cadena <Filter className="w-3.5 h-3.5" /></div>
+            <Select value={fCadena} onValueChange={setFCadena}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todas</SelectItem>
+                {cadenas.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="min-w-[180px]">
+            <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Localización <Filter className="w-3.5 h-3.5" /></div>
+            <Select value={fLoc} onValueChange={setFLoc}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todas</SelectItem>
+                {localizaciones.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="min-w-[180px] relative" ref={mesRef}>
+            <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Mes <Filter className="w-3.5 h-3.5" /></div>
+            <button className="flex items-center justify-between w-full rounded-md border border-input bg-background px-3 py-2 text-sm" onClick={() => setMesDropOpen(!mesDropOpen)}>
+              <span className="truncate">{fMeses.length ? fMeses.join(", ") : "Selecciona"}</span><ChevronDown className="w-4 h-4 opacity-50" />
+            </button>
+            {mesDropOpen && (
+              <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-2 max-h-52 overflow-auto">
+                {meses.map((m) => (
+                  <label key={m} className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer text-sm">
+                    <Checkbox checked={fMeses.includes(m)} onCheckedChange={() => toggleMes(m)} />{m}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="min-w-[140px] relative" ref={añoRef}>
+            <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Año <Filter className="w-3.5 h-3.5" /></div>
+            <button className="flex items-center justify-between w-full rounded-md border border-input bg-background px-3 py-2 text-sm" onClick={() => setAñoDropOpen(!añoDropOpen)}>
+              <span className="truncate">{fAños.length ? fAños.join(", ") : "Selecciona"}</span><ChevronDown className="w-4 h-4 opacity-50" />
+            </button>
+            {añoDropOpen && (
+              <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-2">
+                {años.map((a) => (
+                  <label key={a} className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer text-sm">
+                    <Checkbox checked={fAños.includes(a)} onCheckedChange={() => toggleAño(a)} />{a}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex items-end min-w-[140px]">
+            <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6 mt-6" onClick={handleSearch}>
+              Agregar o buscar
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main doc table */}
       <div className="mb-8">
-        <h3 className="text-xl font-bold text-foreground mb-1">
-          {doc.mes} {doc.año}
-        </h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xl font-bold text-foreground">{doc.mes} {doc.año}</h3>
+          <Button className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6" onClick={() => setShowPdfDialog(true)}>
+            Exportar a PDF
+          </Button>
+        </div>
         <p className="text-sm text-foreground">Fecha de última actualización: {doc.fecha}</p>
         <p className="text-sm text-foreground">Editado por: {doc.usuario}</p>
-        <p className="text-sm text-foreground mb-2 flex items-center gap-1">
+        <p className="text-sm text-foreground mb-4 flex items-center gap-1">
           Estatus: Copia aislada <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
         </p>
-        <Button
-          className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6 mb-4"
-          onClick={() => setShowPdfDialog(true)}
-        >
-          Exportar a PDF
-        </Button>
 
         <Dialog open={showPdfDialog} onOpenChange={setShowPdfDialog}>
           <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Exportar a PDF</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>Exportar a PDF</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Se exportará el archivo financiero de <strong>{doc.cadena} - {doc.localizacion}</strong> correspondiente a <strong>{doc.mes} {doc.año}</strong>.
-              </p>
+              <p className="text-sm text-muted-foreground">Se exportará el archivo financiero de <strong>{doc.cadena} - {doc.localizacion}</strong> correspondiente a <strong>{doc.mes} {doc.año}</strong>.</p>
               <div className="flex items-center gap-3 p-3 bg-secondary rounded-lg border border-border">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <span className="text-orange-500 font-bold text-xs">PDF</span>
-                </div>
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center"><span className="text-orange-500 font-bold text-xs">PDF</span></div>
                 <div>
                   <p className="text-sm font-medium text-foreground">Financiero_{doc.cadena.replace(/\s/g, "_")}_{doc.mes}_{doc.año}.pdf</p>
                   <p className="text-xs text-muted-foreground">Listo para descargar</p>
@@ -420,6 +660,44 @@ const FileDetailView = ({
           </DialogContent>
         </Dialog>
 
+        {renderFinanceTable(tableValues, handleOpenDesglose, desgloseCol)}
+      </div>
+
+      {desgloseCol && renderDesgloseTable(
+        desgloseCol, desgloseRows, editingRowId, setEditingRowId,
+        addRow, deleteRow, updateRow, () => setDesgloseCol(null)
+      )}
+
+      {/* Added doc tables */}
+      {addedDocs.map((ad) => {
+        const vals = addedTableValues[ad.id] || [...mockRows[0]];
+        const isActiveDesglose = addedDesgloseCol?.docId === ad.id;
+        return (
+          <div key={ad.id}>
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-xl font-bold text-foreground">{ad.cadena} - {ad.localizacion} · {ad.mes} {ad.año}</h3>
+              </div>
+              <p className="text-sm text-foreground">Fecha de última actualización: {ad.fecha}</p>
+              <p className="text-sm text-foreground">Editado por: {ad.usuario}</p>
+              <p className="text-sm text-foreground mb-4 flex items-center gap-1">
+                Estatus: Copia aislada <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
+              </p>
+              {renderFinanceTable(vals, (col) => handleOpenAddedDesglose(ad.id, col, ad), isActiveDesglose ? addedDesgloseCol!.col : null)}
+            </div>
+            {isActiveDesglose && renderDesgloseTable(
+              addedDesgloseCol!.col, addedDesgloseRows, addedEditingRowId, setAddedEditingRowId,
+              () => addAddedRow(ad.id, ad),
+              (row) => deleteAddedRow(row, ad.id),
+              (id, field, value) => updateAddedRow(id, field, value, ad.id),
+              () => setAddedDesgloseCol(null)
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
         <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
           <Table>
             <TableHeader>
