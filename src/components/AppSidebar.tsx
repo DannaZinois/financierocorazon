@@ -19,7 +19,7 @@ const AppSidebar = () => {
 
   return (
     <aside className="w-44 min-h-screen bg-sidebar flex flex-col border-r border-sidebar-border">
-      <nav className="flex-1 py-4 space-y-1 px-2">
+      <nav className="flex-1 py-4 space-y-1">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = activeId === item.id;
@@ -28,7 +28,7 @@ const AppSidebar = () => {
               key={item.id}
               onClick={() => setActiveId(item.id)}
               className={cn(
-                "flex items-center gap-3 w-full px-3 py-3 text-sm rounded-lg transition-all",
+                "flex items-center gap-3 w-full px-3 py-3 text-sm transition-all",
                 isActive
                   ? "bg-sidebar-accent text-sidebar-foreground font-medium"
                   : "text-sidebar-foreground hover:bg-sidebar-accent"
