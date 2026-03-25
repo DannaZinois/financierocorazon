@@ -129,9 +129,16 @@ const UserTable = () => {
                 <TableCell>{user.role}</TableCell>
                 <TableCell>{user.createdAt}</TableCell>
                 <TableCell>
-                  <button className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors">
+                  <button
+                    onClick={() => togglePasswordVisibility(user.id)}
+                    className="inline-flex items-center gap-2 text-sm text-foreground hover:opacity-80 transition-opacity"
+                  >
                     Cambiar contraseña
-                    <KeyRound className="w-4 h-4 text-primary" />
+                    {visiblePasswords.has(user.id) ? (
+                      <Eye className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <EyeOff className="w-4 h-4 text-orange-500" />
+                    )}
                   </button>
                 </TableCell>
                 <TableCell>
