@@ -18,13 +18,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+interface Branch {
+  id: number;
+  cadena: string;
+  nombre: string;
+}
+
 interface UserRecord {
   id: number;
   email: string;
   role: string;
   createdAt: string;
   active: boolean;
-  branches: number;
+  branches: Branch[];
   password: string;
 }
 
