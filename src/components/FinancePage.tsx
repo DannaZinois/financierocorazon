@@ -182,6 +182,7 @@ const FinancePage = () => {
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
   const [desglosePeriod, setDesglosePeriod] = useState<{ mes: string; año: string } | null>(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
 
   const filtered = mockBranches.filter((b) => {
     if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
@@ -433,7 +434,22 @@ const FinancePage = () => {
             </p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowPdfDialog(false)}>Cancelar</Button>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setShowPdfDialog(false)}>Descargar PDF</Button>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => { setShowPdfDialog(false); setShowPublishConfirm(true); }}>Descargar PDF</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPublishConfirm} onOpenChange={setShowPublishConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Confirmar publicación</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              El archivo PDF de <strong>{selectedBranch?.cadena} - {selectedBranch?.localizacion}</strong> será publicado y estará disponible para su descarga. ¿Desea continuar?
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowPublishConfirm(false)}>Cancelar</Button>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setShowPublishConfirm(false)}>Confirmar y publicar</Button>
             </div>
           </div>
         </DialogContent>
