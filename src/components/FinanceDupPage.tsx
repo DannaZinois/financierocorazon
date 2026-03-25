@@ -330,6 +330,8 @@ const FileDetailView = ({
   }, []);
 
   const handleSearch = () => {
+    setDuplicateMsg("");
+    setFilterError(false);
     const filtered = allDocs.filter((d) => {
       if (d.id === doc.id) return false;
       if (fCadena && fCadena !== "__all__" && d.cadena !== fCadena) return false;
@@ -338,9 +340,15 @@ const FileDetailView = ({
       if (fAños.length > 0 && !fAños.includes(d.año)) return false;
       return true;
     });
+    // Check for duplicates
+    const existingIds = new Set(addedDocs.map((r) => r.id));
+    const newOnes = filtered.filter((d) => !existingIds.has(d.id));
+    if (newOnes.length === 0 && filtered.length > 0) {
+      setDuplicateMsg("Esta tabla ya ha sido seleccionada");
+      setFilterError(true);
+      return;
+    }
     setAddedDocs((prev) => {
-      const existingIds = new Set(prev.map((r) => r.id));
-      const newOnes = filtered.filter((d) => !existingIds.has(d.id));
       const newValues: Record<number, string[]> = {};
       newOnes.forEach((d) => { newValues[d.id] = [...mockRows[0]]; });
       setAddedTableValues((pv) => ({ ...pv, ...newValues }));
