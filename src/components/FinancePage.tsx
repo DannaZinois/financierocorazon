@@ -3,6 +3,12 @@ import { Filter, ArrowRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -50,8 +56,15 @@ const financeColumns = [
   "% Costo", "Utilidad bruta", "% utilidad",
 ];
 
+const isPercentColumn = (col: string) => col.startsWith("%") || col.includes("% ");
+
 const mockRows = [
   ["150000", "32000", "45000", "28000", "30%", "12000", "138000", "89000", "64%", "49000", "35%"],
+];
+
+const mockDesglose = [
+  { nombre: "Nombre aquí", cantidad: "$0000", tipo: "", fecha: "Fecha" },
+  { nombre: "Nombre aquí", cantidad: "$0000", tipo: "", fecha: "Fecha" },
 ];
 
 const MultiCheckDropdown = ({
@@ -121,6 +134,7 @@ const FinancePage = () => {
   const [selectedBranch, setSelectedBranch] = useState<BranchCard | null>(null);
   const [selectedMeses, setSelectedMeses] = useState<string[]>([]);
   const [selectedAños, setSelectedAños] = useState<string[]>([]);
+  const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
 
   const filtered = mockBranches.filter((b) => {
     if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
@@ -288,11 +302,23 @@ const FinancePage = () => {
                     <TableBody>
                       {mockRows.map((row, i) => (
                         <TableRow key={i}>
-                          {row.map((cell, j) => (
-                            <TableCell key={j} className="text-sm text-foreground">
-                              {cell}
-                            </TableCell>
-                          ))}
+                          {row.map((cell, j) => {
+                            const col = financeColumns[j];
+                            const isPct = isPercentColumn(col);
+                            const displayVal = isPct ? cell : `$${cell.replace('%', '')}`;
+                            return (
+                              <TableCell
+                                key={j}
+                                className={cn(
+                                  "text-sm text-foreground",
+                                  !isPct && "cursor-pointer hover:bg-secondary/50"
+                                )}
+                                onClick={() => { if (!isPct) setDesgloseCol(col); }}
+                              >
+                                {displayVal}
+                              </TableCell>
+                            );
+                          })}
                         </TableRow>
                       ))}
                     </TableBody>
@@ -309,6 +335,51 @@ const FinancePage = () => {
           })()}
         </div>
       )}
+
+      <Dialog open={!!desgloseCol} onOpenChange={(open) => { if (!open) setDesgloseCol(null); }}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Desglose: {desgloseCol}</DialogTitle>
+          </DialogHeader>
+          <div className="bg-card rounded-lg border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary">
+                  <TableHead className="font-semibold text-foreground">Nombre de dato</TableHead>
+                  <TableHead className="font-semibold text-foreground">Cantidad del gasto</TableHead>
+                  <TableHead className="font-semibold text-foreground">Tipo</TableHead>
+                  <TableHead className="font-semibold text-foreground">Fecha de generación</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mockDesglose.map((row, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="text-muted-foreground">{row.nombre}</TableCell>
+                    <TableCell className="text-foreground">{row.cantidad}</TableCell>
+                    <TableCell>
+                      <Select>
+                        <SelectTrigger className="w-48">
+                          <SelectValue placeholder="Selecciona una opción" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="tipo1">Tipo 1</SelectItem>
+                          <SelectItem value="tipo2">Tipo 2</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{row.fecha}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex justify-end mt-2">
+            <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => setDesgloseCol(null)}>
+              Cerrar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
