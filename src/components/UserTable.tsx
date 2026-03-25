@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, Eye, EyeOff, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import BranchesDialog from "@/components/BranchesDialog";
+import NewUserDialog from "@/components/NewUserDialog";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,7 @@ const UserTable = () => {
   const [users, setUsers] = useState(mockUsers);
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
   const [branchDialogUserId, setBranchDialogUserId] = useState<number | null>(null);
+  const [newUserOpen, setNewUserOpen] = useState(false);
   const filtered = users.filter((u) =>
     u.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -113,7 +115,7 @@ const UserTable = () => {
             }}
           />
         </div>
-        <Button>+ Nuevo Usuario</Button>
+        <Button onClick={() => setNewUserOpen(true)}>+ Nuevo Usuario</Button>
       </div>
 
       <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
@@ -244,6 +246,25 @@ const UserTable = () => {
               prev.map((u) => (u.id === branchDialogUserId ? { ...u, branches: newBranches } : u))
             );
           }
+        }}
+      />
+      <NewUserDialog
+        open={newUserOpen}
+        onClose={() => setNewUserOpen(false)}
+        onAdd={({ name, email, password, role }) => {
+          const newId = Math.max(...users.map((u) => u.id)) + 1;
+          setUsers((prev) => [
+            {
+              id: newId,
+              email,
+              role,
+              createdAt: new Date().toLocaleDateString("es-MX"),
+              active: true,
+              branches: [...defaultBranches],
+              password,
+            },
+            ...prev,
+          ]);
         }}
       />
     </div>
