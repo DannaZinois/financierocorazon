@@ -294,6 +294,7 @@ const FileDetailView = ({
   onBack: () => void;
 }) => {
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
+  const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [desgloseRows, setDesgloseRows] = useState<DesgloseRow[]>([]);
   const [tableValues, setTableValues] = useState<string[]>([...mockRows[0]]);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
@@ -383,9 +384,41 @@ const FileDetailView = ({
         </h3>
         <p className="text-sm text-foreground">Fecha de última actualización: {doc.fecha}</p>
         <p className="text-sm text-foreground">Editado por: {doc.usuario}</p>
-        <p className="text-sm text-foreground mb-4 flex items-center gap-1">
-          Estatus: Borrador <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
+        <p className="text-sm text-foreground mb-2 flex items-center gap-1">
+          Estatus: Copia aislada <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
         </p>
+        <Button
+          className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6 mb-4"
+          onClick={() => setShowPdfDialog(true)}
+        >
+          Exportar a PDF
+        </Button>
+
+        <Dialog open={showPdfDialog} onOpenChange={setShowPdfDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Exportar a PDF</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Se exportará el archivo financiero de <strong>{doc.cadena} - {doc.localizacion}</strong> correspondiente a <strong>{doc.mes} {doc.año}</strong>.
+              </p>
+              <div className="flex items-center gap-3 p-3 bg-secondary rounded-lg border border-border">
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <span className="text-orange-500 font-bold text-xs">PDF</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Financiero_{doc.cadena.replace(/\s/g, "_")}_{doc.mes}_{doc.año}.pdf</p>
+                  <p className="text-xs text-muted-foreground">Listo para descargar</p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowPdfDialog(false)}>Cancelar</Button>
+                <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setShowPdfDialog(false)}>Descargar</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
           <Table>
@@ -429,7 +462,7 @@ const FileDetailView = ({
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-2xl font-bold text-foreground">Desglose: {desgloseCol}</h3>
             <Button
-              className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6"
+              className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6"
               onClick={addRow}
             >
               Agregar dato
