@@ -516,7 +516,7 @@ const FileDetailView = ({
                             title={isEditing ? "Guardar" : "Editar"}
                             onClick={() => setEditingRowId(isEditing ? null : row.id)}
                           >
-                            <Copy className="w-5 h-5" />
+                            <Pencil className="w-5 h-5" />
                           </button>
                           <button
                             className="p-1.5 rounded hover:bg-destructive/10 text-destructive"
