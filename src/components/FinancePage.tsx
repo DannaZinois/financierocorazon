@@ -296,7 +296,7 @@ const FinancePage = () => {
               selected={selectedAños}
               onChange={setSelectedAños}
             />
-            <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6">
+            <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={() => setShowPdfDialog(true)}>
               Exportar a pdf
             </Button>
           </div>
