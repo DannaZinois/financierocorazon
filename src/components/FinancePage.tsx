@@ -181,6 +181,7 @@ const FinancePage = () => {
   const [selectedAños, setSelectedAños] = useState<string[]>([]);
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
   const [desglosePeriod, setDesglosePeriod] = useState<{ mes: string; año: string } | null>(null);
+  const [showPdfDialog, setShowPdfDialog] = useState(false);
 
   const filtered = mockBranches.filter((b) => {
     if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
@@ -295,7 +296,7 @@ const FinancePage = () => {
               selected={selectedAños}
               onChange={setSelectedAños}
             />
-            <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6">
+            <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={() => setShowPdfDialog(true)}>
               Exportar a pdf
             </Button>
           </div>
@@ -418,6 +419,21 @@ const FinancePage = () => {
               <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => { setDesgloseCol(null); setDesglosePeriod(null); }}>
                 Cerrar
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPdfDialog} onOpenChange={setShowPdfDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Exportar a PDF</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Se exportará el archivo financiero de <strong>{selectedBranch?.cadena} - {selectedBranch?.localizacion}</strong> correspondiente a <strong>{selectedMeses.join(", ")} {selectedAños.join(", ")}</strong>.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowPdfDialog(false)}>Cancelar</Button>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setShowPdfDialog(false)}>Descargar PDF</Button>
             </div>
           </div>
         </DialogContent>
