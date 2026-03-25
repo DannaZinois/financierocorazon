@@ -423,6 +423,21 @@ const FinancePage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showPdfDialog} onOpenChange={setShowPdfDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Exportar a PDF</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Se exportará el archivo financiero de <strong>{selectedBranch?.cadena} - {selectedBranch?.localizacion}</strong> correspondiente a <strong>{selectedMeses.join(", ")} {selectedAños.join(", ")}</strong>.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowPdfDialog(false)}>Cancelar</Button>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setShowPdfDialog(false)}>Descargar PDF</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
