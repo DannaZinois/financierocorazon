@@ -113,7 +113,7 @@ const UserTable = () => {
         <Button>+ Nuevo Usuario</Button>
       </div>
 
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
+      <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
         <Table>
           <TableHeader>
             <TableRow className="bg-secondary">
