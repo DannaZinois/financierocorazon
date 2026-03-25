@@ -24,6 +24,7 @@ interface UserRecord {
   createdAt: string;
   active: boolean;
   branches: number;
+  password: string;
 }
 
 const mockUsers: UserRecord[] = Array.from({ length: 160 }, (_, i) => ({
