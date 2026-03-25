@@ -248,6 +248,25 @@ const UserTable = () => {
           }
         }}
       />
+      <NewUserDialog
+        open={newUserOpen}
+        onClose={() => setNewUserOpen(false)}
+        onAdd={({ name, email, password, role }) => {
+          const newId = Math.max(...users.map((u) => u.id)) + 1;
+          setUsers((prev) => [
+            {
+              id: newId,
+              email,
+              role,
+              createdAt: new Date().toLocaleDateString("es-MX"),
+              active: true,
+              branches: [...defaultBranches],
+              password,
+            },
+            ...prev,
+          ]);
+        }}
+      />
     </div>
   );
 };
