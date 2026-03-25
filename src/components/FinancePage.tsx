@@ -335,6 +335,51 @@ const FinancePage = () => {
           })()}
         </div>
       )}
+
+      <Dialog open={!!desgloseCol} onOpenChange={(open) => { if (!open) setDesgloseCol(null); }}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Desglose: {desgloseCol}</DialogTitle>
+          </DialogHeader>
+          <div className="bg-card rounded-lg border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary">
+                  <TableHead className="font-semibold text-foreground">Nombre de dato</TableHead>
+                  <TableHead className="font-semibold text-foreground">Cantidad del gasto</TableHead>
+                  <TableHead className="font-semibold text-foreground">Tipo</TableHead>
+                  <TableHead className="font-semibold text-foreground">Fecha de generación</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mockDesglose.map((row, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="text-muted-foreground">{row.nombre}</TableCell>
+                    <TableCell className="text-foreground">{row.cantidad}</TableCell>
+                    <TableCell>
+                      <Select>
+                        <SelectTrigger className="w-48">
+                          <SelectValue placeholder="Selecciona una opción" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="tipo1">Tipo 1</SelectItem>
+                          <SelectItem value="tipo2">Tipo 2</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{row.fecha}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex justify-end mt-2">
+            <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => setDesgloseCol(null)}>
+              Cerrar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
