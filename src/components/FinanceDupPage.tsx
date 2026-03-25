@@ -401,7 +401,7 @@ const FinanceDupPage = () => {
   const filteredNuevos = getFilteredDocs(nuevosArchivos);
 
   const displayExistente = mode === "existente" ? filteredExistente : existenteDocs;
-  const displayNuevos = mode === "nuevo" ? filteredNuevos : nuevosArchivos;
+  const displayNuevos = nuevosArchivos;
 
   const handleModeChange = (newMode: "existente" | "nuevo") => {
     setMode(newMode);
