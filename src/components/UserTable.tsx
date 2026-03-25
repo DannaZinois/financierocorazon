@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Eye, ChevronLeft, ChevronRight, Info, KeyRound } from "lucide-react";
+import { Search, Eye, EyeOff, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ const UserTable = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [users, setUsers] = useState(mockUsers);
-
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
   const filtered = users.filter((u) =>
     u.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -53,6 +53,18 @@ const UserTable = () => {
     setUsers((prev) =>
       prev.map((u) => (u.id === id ? { ...u, active: !u.active } : u))
     );
+  };
+
+  const togglePasswordVisibility = (id: number) => {
+    setVisiblePasswords((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   return (
@@ -117,9 +129,16 @@ const UserTable = () => {
                 <TableCell>{user.role}</TableCell>
                 <TableCell>{user.createdAt}</TableCell>
                 <TableCell>
-                  <button className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors">
+                  <button
+                    onClick={() => togglePasswordVisibility(user.id)}
+                    className="inline-flex items-center gap-2 text-sm text-foreground hover:opacity-80 transition-opacity"
+                  >
                     Cambiar contraseña
-                    <KeyRound className="w-4 h-4 text-primary" />
+                    {visiblePasswords.has(user.id) ? (
+                      <Eye className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <EyeOff className="w-4 h-4 text-orange-500" />
+                    )}
                   </button>
                 </TableCell>
                 <TableCell>
