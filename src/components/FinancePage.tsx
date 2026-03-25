@@ -58,8 +58,8 @@ const FinancePage = () => {
   const [cadenaFilter, setCadenaFilter] = useState<string>("");
   const [locFilter, setLocFilter] = useState<string>("");
   const [selectedBranch, setSelectedBranch] = useState<BranchCard | null>(null);
-  const [selectedMes, setSelectedMes] = useState<string>("");
-  const [selectedAño, setSelectedAño] = useState<string>("");
+  const [selectedMeses, setSelectedMeses] = useState<string[]>([]);
+  const [selectedAños, setSelectedAños] = useState<string[]>([]);
 
   const filtered = mockBranches.filter((b) => {
     if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
@@ -162,29 +162,43 @@ const FinancePage = () => {
           <div className="flex items-end gap-4 mb-6">
             <div>
               <p className="text-sm font-medium text-primary mb-1">Meses</p>
-              <Select value={selectedMes} onValueChange={setSelectedMes}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
-                <SelectContent>
-                  {meses.map((m) => (
-                    <SelectItem key={m} value={m}>{m}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="w-48 border border-input rounded-md bg-card p-2 max-h-40 overflow-auto space-y-1">
+                {meses.map((m) => (
+                  <label key={m} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary rounded px-1">
+                    <input
+                      type="checkbox"
+                      checked={selectedMeses.includes(m)}
+                      onChange={() =>
+                        setSelectedMeses((prev) =>
+                          prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
+                        )
+                      }
+                      className="accent-primary"
+                    />
+                    {m}
+                  </label>
+                ))}
+              </div>
             </div>
             <div>
               <p className="text-sm font-medium text-foreground mb-1">Años</p>
-              <Select value={selectedAño} onValueChange={setSelectedAño}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="" />
-                </SelectTrigger>
-                <SelectContent>
-                  {años.map((a) => (
-                    <SelectItem key={a} value={a}>{a}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="w-48 border border-input rounded-md bg-card p-2 space-y-1">
+                {años.map((a) => (
+                  <label key={a} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary rounded px-1">
+                    <input
+                      type="checkbox"
+                      checked={selectedAños.includes(a)}
+                      onChange={() =>
+                        setSelectedAños((prev) =>
+                          prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
+                        )
+                      }
+                      className="accent-primary"
+                    />
+                    {a}
+                  </label>
+                ))}
+              </div>
             </div>
             <Button className="rounded-full bg-primary text-primary-foreground px-6">
               Exportar a pdf
@@ -195,7 +209,11 @@ const FinancePage = () => {
           </div>
 
           <h3 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
-            Mes y año seleccionados <Lock className="w-5 h-5 text-destructive" />
+            {selectedMeses.length > 0 || selectedAños.length > 0
+              ? `${selectedMeses.join(", ")}${selectedMeses.length > 0 && selectedAños.length > 0 ? " — " : ""}${selectedAños.join(", ")}`
+              : "Mes y año seleccionados"
+            }
+            {" "}<Lock className="w-5 h-5 text-destructive" />
           </h3>
           <p className="text-sm text-foreground">Fecha de última actualización: 00/00/0000</p>
           <p className="text-sm text-foreground">Editado por: Usuario Jane Doe</p>
