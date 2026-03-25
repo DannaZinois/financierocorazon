@@ -231,6 +231,18 @@ const UserTable = () => {
           </Button>
         </div>
       </div>
+      <BranchesDialog
+        open={branchDialogUserId !== null}
+        onClose={() => setBranchDialogUserId(null)}
+        branches={branchDialogUserId ? users.find((u) => u.id === branchDialogUserId)?.branches || [] : []}
+        onUpdate={(newBranches) => {
+          if (branchDialogUserId) {
+            setUsers((prev) =>
+              prev.map((u) => (u.id === branchDialogUserId ? { ...u, branches: newBranches } : u))
+            );
+          }
+        }}
+      />
     </div>
   );
 };
