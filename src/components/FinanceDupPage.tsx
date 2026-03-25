@@ -383,6 +383,19 @@ const FinanceDupPage = () => {
   const [selectedMeses, setSelectedMeses] = useState<string[]>([]);
   const [selectedAños, setSelectedAños] = useState<string[]>([]);
   const [mode, setMode] = useState<"existente" | "nuevo">("existente");
+
+  const handleModeChange = (newMode: "existente" | "nuevo") => {
+    setMode(newMode);
+    if (newMode === "nuevo") {
+      // Immediately add filtered docs to nuevos table
+      const filtered = getFilteredDocs(existenteDocs);
+      setNuevosArchivos((prev) => {
+        const existingIds = new Set(prev.map((r) => r.id));
+        const newOnes = filtered.filter((d) => !existingIds.has(d.id));
+        return [...prev, ...newOnes];
+      });
+    }
+  };
   const [expandedCambios, setExpandedCambios] = useState<number | null>(null);
   const [expandedComentario, setExpandedComentario] = useState<number | null>(null);
   const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([...baseMockDocs]);
