@@ -181,8 +181,11 @@ const UserTable = () => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <button className="text-sm text-foreground hover:text-primary transition-colors">
-                    Ver [{user.branches}] sucursales
+                  <button
+                    onClick={() => setBranchDialogUserId(user.id)}
+                    className="text-sm text-foreground hover:text-primary transition-colors"
+                  >
+                    Ver [{user.branches.length}] sucursales
                   </button>
                 </TableCell>
               </TableRow>
