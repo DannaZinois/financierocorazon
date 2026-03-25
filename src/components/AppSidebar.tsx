@@ -30,11 +30,11 @@ const AppSidebar = () => {
               className={cn(
                 "flex items-center gap-3 w-full px-3 py-3 text-sm rounded-lg transition-all",
                 isActive
-                  ? "bg-card text-foreground font-medium shadow-sm"
+                  ? "bg-sidebar-accent text-sidebar-foreground font-medium"
                   : "text-sidebar-foreground hover:bg-sidebar-accent"
               )}
             >
-              <Icon className={cn("w-5 h-5", isActive ? "text-foreground" : "text-sidebar-foreground")} />
+              <Icon className="w-5 h-5 text-sidebar-foreground" />
               <span>{item.label}</span>
             </button>
           );
