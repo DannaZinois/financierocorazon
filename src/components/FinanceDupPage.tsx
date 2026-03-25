@@ -745,14 +745,8 @@ const FinanceDupPage = () => {
 
   const handleModeChange = (newMode: "existente" | "nuevo") => {
     setMode(newMode);
-    if (newMode === "nuevo") {
-      const filtered = getFilteredDocs(existenteDocs);
-      setNuevosArchivos((prev) => {
-        const existingIds = new Set(prev.map((r) => r.id));
-        const newOnes = filtered.filter((d) => !existingIds.has(d.id));
-        return [...prev, ...newOnes];
-      });
-    }
+    setMainDuplicateMsg("");
+    setMainFilterError(false);
   };
 
   const handleAgregarBuscar = () => {
@@ -760,9 +754,14 @@ const FinanceDupPage = () => {
     setMainFilterError(false);
     if (mode === "nuevo") {
       const filtered = getFilteredDocs(existenteDocs);
+      if (filtered.length === 0) {
+        setMainDuplicateMsg("No se encontraron archivos con los filtros seleccionados");
+        setMainFilterError(true);
+        return;
+      }
       const existingIds = new Set(nuevosArchivos.map((r) => r.id));
       const newOnes = filtered.filter((d) => !existingIds.has(d.id));
-      if (newOnes.length === 0 && filtered.length > 0) {
+      if (newOnes.length === 0) {
         setMainDuplicateMsg("Esta tabla ya ha sido seleccionada");
         setMainFilterError(true);
         return;
