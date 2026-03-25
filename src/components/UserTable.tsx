@@ -41,7 +41,7 @@ const UserTable = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [users, setUsers] = useState(mockUsers);
-
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
   const filtered = users.filter((u) =>
     u.email.toLowerCase().includes(search.toLowerCase())
   );
