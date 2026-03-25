@@ -580,8 +580,8 @@ const FileDetailView = ({
         <div className="flex flex-wrap items-start gap-6 mb-4">
           <div className="min-w-[180px]">
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Cadena <Filter className="w-3.5 h-3.5" /></div>
-            <Select value={fCadena} onValueChange={setFCadena}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+            <Select value={fCadena} onValueChange={(v) => { setFCadena(v); setFilterError(false); setDuplicateMsg(""); }}>
+              <SelectTrigger className={cn("w-full", filterError && "border-red-500")}><SelectValue placeholder="Selecciona" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
                 {cadenas.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -590,8 +590,8 @@ const FileDetailView = ({
           </div>
           <div className="min-w-[180px]">
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Localización <Filter className="w-3.5 h-3.5" /></div>
-            <Select value={fLoc} onValueChange={setFLoc}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+            <Select value={fLoc} onValueChange={(v) => { setFLoc(v); setFilterError(false); setDuplicateMsg(""); }}>
+              <SelectTrigger className={cn("w-full", filterError && "border-red-500")}><SelectValue placeholder="Selecciona" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
                 {localizaciones.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
@@ -600,14 +600,14 @@ const FileDetailView = ({
           </div>
           <div className="min-w-[180px] relative" ref={mesRef}>
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Mes <Filter className="w-3.5 h-3.5" /></div>
-            <button className="flex items-center justify-between w-full rounded-md border border-input bg-background px-3 py-2 text-sm" onClick={() => setMesDropOpen(!mesDropOpen)}>
+            <button className={cn("flex items-center justify-between w-full rounded-md border bg-background px-3 py-2 text-sm", filterError ? "border-red-500" : "border-input")} onClick={() => setMesDropOpen(!mesDropOpen)}>
               <span className="truncate">{fMeses.length ? fMeses.join(", ") : "Selecciona"}</span><ChevronDown className="w-4 h-4 opacity-50" />
             </button>
             {mesDropOpen && (
               <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-2 max-h-52 overflow-auto">
                 {meses.map((m) => (
                   <label key={m} className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer text-sm">
-                    <Checkbox checked={fMeses.includes(m)} onCheckedChange={() => toggleMes(m)} />{m}
+                    <Checkbox checked={fMeses.includes(m)} onCheckedChange={() => { toggleMes(m); setFilterError(false); setDuplicateMsg(""); }} />{m}
                   </label>
                 ))}
               </div>
@@ -615,14 +615,14 @@ const FileDetailView = ({
           </div>
           <div className="min-w-[140px] relative" ref={añoRef}>
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Año <Filter className="w-3.5 h-3.5" /></div>
-            <button className="flex items-center justify-between w-full rounded-md border border-input bg-background px-3 py-2 text-sm" onClick={() => setAñoDropOpen(!añoDropOpen)}>
+            <button className={cn("flex items-center justify-between w-full rounded-md border bg-background px-3 py-2 text-sm", filterError ? "border-red-500" : "border-input")} onClick={() => setAñoDropOpen(!añoDropOpen)}>
               <span className="truncate">{fAños.length ? fAños.join(", ") : "Selecciona"}</span><ChevronDown className="w-4 h-4 opacity-50" />
             </button>
             {añoDropOpen && (
               <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-2">
                 {años.map((a) => (
                   <label key={a} className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer text-sm">
-                    <Checkbox checked={fAños.includes(a)} onCheckedChange={() => toggleAño(a)} />{a}
+                    <Checkbox checked={fAños.includes(a)} onCheckedChange={() => { toggleAño(a); setFilterError(false); setDuplicateMsg(""); }} />{a}
                   </label>
                 ))}
               </div>
@@ -630,10 +630,13 @@ const FileDetailView = ({
           </div>
           <div className="flex items-end min-w-[140px]">
             <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6 mt-6" onClick={handleSearch}>
-              Agregar o buscar
+              Agregar
             </Button>
           </div>
         </div>
+        {duplicateMsg && (
+          <p className="text-red-500 text-sm font-medium mt-2">{duplicateMsg}</p>
+        )}
       </div>
 
       {/* Main doc table */}
