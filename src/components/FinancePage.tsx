@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Filter, ArrowRight } from "lucide-react";
+import { Filter, ArrowRight, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -7,6 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface BranchCard {
   id: number;
@@ -31,18 +41,34 @@ const mockBranches: BranchCard[] = [
 const cadenas = ["Corazón de Alcachofa", "Kokoro", "Oasis"];
 const localizaciones = ["Andares", "Punto Sao Paulo", "Centro"];
 
+const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const años = ["2024", "2025", "2026"];
+
+const financeColumns = [
+  "Ventas brutas", "Inventario inicial", "Compra", "Inventario final",
+  "% Comp/Venta", "Dev Desc a VTA", "Venta Neta", "Costo venta",
+  "% Costo", "Utilidad bruta", "% utilidad",
+];
+
+const mockRows = Array.from({ length: 4 }, () =>
+  financeColumns.map(() => "00000")
+);
+
 const FinancePage = () => {
   const [cadenaFilter, setCadenaFilter] = useState<string>("");
   const [locFilter, setLocFilter] = useState<string>("");
+  const [selectedBranch, setSelectedBranch] = useState<BranchCard | null>(null);
+  const [selectedMes, setSelectedMes] = useState<string>("");
+  const [selectedAño, setSelectedAño] = useState<string>("");
 
   const filtered = mockBranches.filter((b) => {
-    if (cadenaFilter && b.cadena !== cadenaFilter) return false;
-    if (locFilter && b.localizacion !== locFilter) return false;
+    if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
+    if (locFilter && locFilter !== "__all__" && b.localizacion !== locFilter) return false;
     return true;
   });
 
   return (
-    <div className="flex-1 p-8">
+    <div className="flex-1 p-8 overflow-auto">
       <h1
         className="text-3xl font-bold text-foreground mb-1"
         style={{ fontFamily: '"Myanmar MN", sans-serif' }}
@@ -95,22 +121,120 @@ const FinancePage = () => {
       </div>
 
       <div className="grid grid-cols-5 gap-4">
-        {filtered.map((branch) => (
-          <div
-            key={branch.id}
-            className="bg-card rounded-lg border border-border p-4 flex flex-col justify-between shadow-sm"
-          >
-            <div>
-              <p className="font-semibold text-foreground text-sm">{branch.cadena}</p>
-              <p className="text-muted-foreground text-sm">{branch.localizacion}</p>
-              <p className="text-muted-foreground text-sm">Estatus: {branch.estatus}</p>
+        {filtered.map((branch) => {
+          const isSelected = selectedBranch?.id === branch.id;
+          return (
+            <div
+              key={branch.id}
+              onClick={() => setSelectedBranch(isSelected ? null : branch)}
+              className={cn(
+                "rounded-lg border p-4 flex flex-col justify-between shadow-sm cursor-pointer transition-all",
+                isSelected
+                  ? "bg-sidebar text-sidebar-foreground border-sidebar"
+                  : "bg-card border-border"
+              )}
+            >
+              <div>
+                <p className={cn("font-semibold text-sm", isSelected ? "text-sidebar-foreground" : "text-foreground")}>{branch.cadena}</p>
+                <p className={cn("text-sm", isSelected ? "text-sidebar-foreground/80" : "text-muted-foreground")}>{branch.localizacion}</p>
+                <p className={cn("text-sm", isSelected ? "text-sidebar-foreground/80" : "text-muted-foreground")}>Estatus: {branch.estatus}</p>
+              </div>
+              {isSelected ? (
+                <Button size="sm" className="mt-3 bg-primary text-primary-foreground rounded-full text-xs">
+                  Publicar versión
+                </Button>
+              ) : (
+                <button className="flex items-center gap-1 text-sm font-medium text-primary mt-3 hover:underline">
+                  Ver más detalles <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
-            <button className="flex items-center gap-1 text-sm font-medium text-primary mt-3 hover:underline">
-              Ver más detalles <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {selectedBranch && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
+            Nombre de cadena: {selectedBranch.localizacion}
+          </h2>
+
+          <div className="flex items-end gap-4 mb-6">
+            <div>
+              <p className="text-sm font-medium text-primary mb-1">Meses</p>
+              <Select value={selectedMes} onValueChange={setSelectedMes}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  {meses.map((m) => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground mb-1">Años</p>
+              <Select value={selectedAño} onValueChange={setSelectedAño}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  {años.map((a) => (
+                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button className="rounded-full bg-primary text-primary-foreground px-6">
+              Exportar a pdf
+            </Button>
+            <Button className="rounded-full bg-warning text-warning-foreground px-6">
+              Historial de versiones
+            </Button>
+          </div>
+
+          <h3 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
+            Mes y año seleccionados <Lock className="w-5 h-5 text-destructive" />
+          </h3>
+          <p className="text-sm text-foreground">Fecha de última actualización: 00/00/0000</p>
+          <p className="text-sm text-foreground">Editado por: Usuario Jane Doe</p>
+          <p className="text-sm text-foreground mb-4 flex items-center gap-1">
+            Estatus: Borrador <span className="w-2.5 h-2.5 rounded-full bg-success inline-block" />
+          </p>
+
+          <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary">
+                  {financeColumns.map((col) => (
+                    <TableHead key={col} className="font-semibold text-foreground text-xs whitespace-nowrap">
+                      {col}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mockRows.map((row, i) => (
+                  <TableRow key={i}>
+                    {row.map((cell, j) => (
+                      <TableCell key={j} className="text-sm text-foreground">
+                        {cell}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="flex justify-end mt-4">
+            <Button className="rounded-full bg-destructive text-destructive-foreground px-8">
+              Publicar
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
