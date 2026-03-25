@@ -160,46 +160,20 @@ const FinancePage = () => {
           </h2>
 
           <div className="flex items-end gap-4 mb-6">
-            <div>
-              <p className="text-sm font-medium text-primary mb-1">Meses</p>
-              <div className="w-48 border border-input rounded-md bg-card p-2 max-h-40 overflow-auto space-y-1">
-                {meses.map((m) => (
-                  <label key={m} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary rounded px-1">
-                    <input
-                      type="checkbox"
-                      checked={selectedMeses.includes(m)}
-                      onChange={() =>
-                        setSelectedMeses((prev) =>
-                          prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
-                        )
-                      }
-                      className="accent-primary"
-                    />
-                    {m}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground mb-1">Años</p>
-              <div className="w-48 border border-input rounded-md bg-card p-2 space-y-1">
-                {años.map((a) => (
-                  <label key={a} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary rounded px-1">
-                    <input
-                      type="checkbox"
-                      checked={selectedAños.includes(a)}
-                      onChange={() =>
-                        setSelectedAños((prev) =>
-                          prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
-                        )
-                      }
-                      className="accent-primary"
-                    />
-                    {a}
-                  </label>
-                ))}
-              </div>
-            </div>
+            <MultiCheckDropdown
+              label="Meses"
+              labelClass="text-primary"
+              options={meses}
+              selected={selectedMeses}
+              onChange={setSelectedMeses}
+            />
+            <MultiCheckDropdown
+              label="Años"
+              labelClass="text-foreground"
+              options={años}
+              selected={selectedAños}
+              onChange={setSelectedAños}
+            />
             <Button className="rounded-full bg-primary text-primary-foreground px-6">
               Exportar a pdf
             </Button>
