@@ -279,7 +279,7 @@ const FinancePage = () => {
       {selectedBranch && (
         <div className="mt-10">
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            Nombre de cadena: {selectedBranch.localizacion}
+            {selectedBranch.cadena}: {selectedBranch.localizacion}
           </h2>
 
           <div className="flex items-end gap-4 mb-6">
