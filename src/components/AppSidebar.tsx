@@ -34,7 +34,7 @@ const AppSidebar = () => {
                   : "text-sidebar-foreground hover:bg-sidebar-accent"
               )}
             >
-              <Icon className={cn("w-5 h-5", isActive ? "text-foreground" : "text-sidebar-foreground")} />
+              <Icon className="w-5 h-5 text-sidebar-foreground" />
               <span>{item.label}</span>
             </button>
           );
