@@ -1,4 +1,5 @@
 import { User } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const TopBar = () => {
   return (
