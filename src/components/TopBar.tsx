@@ -1,12 +1,11 @@
 import { User } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const TopBar = () => {
   return (
     <header className="h-14 bg-topbar flex items-center justify-between px-6">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-          <span className="text-xs font-bold text-foreground">🏛️</span>
-        </div>
+        <img src={logo} alt="Corazón de Alcachofa" className="h-10" />
       </div>
       <button className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
         <User className="w-5 h-5 text-primary-foreground" />
