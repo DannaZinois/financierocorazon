@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search, Eye, EyeOff, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import BranchesDialog from "@/components/BranchesDialog";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,15 +18,28 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+interface Branch {
+  id: number;
+  cadena: string;
+  nombre: string;
+}
+
 interface UserRecord {
   id: number;
   email: string;
   role: string;
   createdAt: string;
   active: boolean;
-  branches: number;
+  branches: Branch[];
   password: string;
 }
+
+const defaultBranches: Branch[] = [
+  { id: 1, cadena: "Corazón de Alcachofa", nombre: "Andares" },
+  { id: 2, cadena: "Corazón de Alcachofa", nombre: "Punto Sao Paulo" },
+  { id: 3, cadena: "Corazón de Alcachofa", nombre: "Andares" },
+  { id: 4, cadena: "Kokoro", nombre: "Punto Sao Paulo" },
+];
 
 const mockUsers: UserRecord[] = Array.from({ length: 160 }, (_, i) => ({
   id: i + 1,
@@ -33,7 +47,7 @@ const mockUsers: UserRecord[] = Array.from({ length: 160 }, (_, i) => ({
   role: ["Admin", "Tesorería", "Socio"][i % 3],
   createdAt: "00/00/0000",
   active: true,
-  branches: 4,
+  branches: [...defaultBranches],
   password: "Pass1234!",
 }));
 
@@ -44,6 +58,7 @@ const UserTable = () => {
   const [page, setPage] = useState(1);
   const [users, setUsers] = useState(mockUsers);
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
+  const [branchDialogUserId, setBranchDialogUserId] = useState<number | null>(null);
   const filtered = users.filter((u) =>
     u.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -166,8 +181,11 @@ const UserTable = () => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <button className="text-sm text-foreground hover:text-primary transition-colors">
-                    Ver [{user.branches}] sucursales
+                  <button
+                    onClick={() => setBranchDialogUserId(user.id)}
+                    className="text-sm text-foreground hover:text-primary transition-colors"
+                  >
+                    Ver [{user.branches.length}] sucursales
                   </button>
                 </TableCell>
               </TableRow>
@@ -213,6 +231,18 @@ const UserTable = () => {
           </Button>
         </div>
       </div>
+      <BranchesDialog
+        open={branchDialogUserId !== null}
+        onClose={() => setBranchDialogUserId(null)}
+        branches={branchDialogUserId ? users.find((u) => u.id === branchDialogUserId)?.branches || [] : []}
+        onUpdate={(newBranches) => {
+          if (branchDialogUserId) {
+            setUsers((prev) =>
+              prev.map((u) => (u.id === branchDialogUserId ? { ...u, branches: newBranches } : u))
+            );
+          }
+        }}
+      />
     </div>
   );
 };
