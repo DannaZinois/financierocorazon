@@ -56,8 +56,15 @@ const financeColumns = [
   "% Costo", "Utilidad bruta", "% utilidad",
 ];
 
+const isPercentColumn = (col: string) => col.startsWith("%") || col.includes("% ");
+
 const mockRows = [
   ["150000", "32000", "45000", "28000", "30%", "12000", "138000", "89000", "64%", "49000", "35%"],
+];
+
+const mockDesglose = [
+  { nombre: "Nombre aquí", cantidad: "$0000", tipo: "", fecha: "Fecha" },
+  { nombre: "Nombre aquí", cantidad: "$0000", tipo: "", fecha: "Fecha" },
 ];
 
 const MultiCheckDropdown = ({
