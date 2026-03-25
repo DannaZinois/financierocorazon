@@ -143,7 +143,7 @@ const DashboardPage = () => {
         <div className="flex gap-2">
           <Select value={selectedCadena} onValueChange={setSelectedCadena}>
             <SelectTrigger className="w-[180px] bg-card border-border text-sm">
-              <SelectValue />
+              <SelectValue placeholder="Cadena" />
             </SelectTrigger>
             <SelectContent>
               {cadenas.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -151,7 +151,7 @@ const DashboardPage = () => {
           </Select>
           <Select value={selectedLoc} onValueChange={setSelectedLoc}>
             <SelectTrigger className="w-[160px] bg-card border-border text-sm">
-              <SelectValue />
+              <SelectValue placeholder="Sucursal" />
             </SelectTrigger>
             <SelectContent>
               {localizaciones.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
