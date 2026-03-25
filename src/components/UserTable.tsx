@@ -63,6 +63,7 @@ const UserTable = () => {
   const [users, setUsers] = useState(mockUsers);
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
   const [branchDialogUserId, setBranchDialogUserId] = useState<number | null>(null);
+  const [newUserOpen, setNewUserOpen] = useState(false);
   const filtered = users.filter((u) =>
     u.email.toLowerCase().includes(search.toLowerCase())
   );
