@@ -642,7 +642,7 @@ const FileDetailView = ({
       {/* Main doc table */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-1">
-          <h3 className="text-xl font-bold text-foreground">{doc.mes} {doc.año}</h3>
+          <h3 className="text-xl font-bold text-foreground">{doc.cadena} - {doc.localizacion} · {doc.mes} {doc.año}</h3>
           <Button className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6" onClick={() => setShowPdfDialog(true)}>
             Exportar a PDF
           </Button>
