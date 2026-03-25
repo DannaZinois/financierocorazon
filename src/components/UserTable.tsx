@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search, Eye, EyeOff, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import BranchesDialog from "@/components/BranchesDialog";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
