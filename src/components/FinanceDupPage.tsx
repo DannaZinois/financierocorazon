@@ -756,15 +756,20 @@ const FinanceDupPage = () => {
   };
 
   const handleAgregarBuscar = () => {
+    setMainDuplicateMsg("");
+    setMainFilterError(false);
     if (mode === "nuevo") {
       const filtered = getFilteredDocs(existenteDocs);
-      setNuevosArchivos((prev) => {
-        const existingIds = new Set(prev.map((r) => r.id));
-        const newOnes = filtered.filter((d) => !existingIds.has(d.id));
-        return [...prev, ...newOnes];
-      });
+      const existingIds = new Set(nuevosArchivos.map((r) => r.id));
+      const newOnes = filtered.filter((d) => !existingIds.has(d.id));
+      if (newOnes.length === 0 && filtered.length > 0) {
+        setMainDuplicateMsg("Esta tabla ya ha sido seleccionada");
+        setMainFilterError(true);
+        return;
+      }
+      setNuevosArchivos((prev) => [...prev, ...newOnes]);
     }
-    // For "existente" mode the table auto-filters, nothing extra needed
+    // For "existente" mode the table auto-filters
   };
 
   const removeDoc = (id: number, table: "existente" | "nuevo") => {
