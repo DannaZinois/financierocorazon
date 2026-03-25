@@ -50,9 +50,9 @@ const financeColumns = [
   "% Costo", "Utilidad bruta", "% utilidad",
 ];
 
-const mockRows = Array.from({ length: 4 }, () =>
-  financeColumns.map(() => "00000")
-);
+const mockRows = [
+  ["150000", "32000", "45000", "28000", "30%", "12000", "138000", "89000", "64%", "49000", "35%"],
+];
 
 const FinancePage = () => {
   const [cadenaFilter, setCadenaFilter] = useState<string>("");
