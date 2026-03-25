@@ -55,6 +55,18 @@ const UserTable = () => {
     );
   };
 
+  const togglePasswordVisibility = (id: number) => {
+    setVisiblePasswords((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="flex-1 p-8">
       <h1 className="text-3xl font-bold text-foreground mb-1">Gestión de usuarios</h1>
