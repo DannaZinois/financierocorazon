@@ -397,8 +397,11 @@ const FinanceDupPage = () => {
       if (selectedAños.length > 0 && !selectedAños.includes(doc.año)) return false;
       return true;
     });
-
   const filteredExistente = getFilteredDocs(existenteDocs);
+  const filteredNuevos = getFilteredDocs(nuevosArchivos);
+
+  const displayExistente = mode === "existente" ? filteredExistente : existenteDocs;
+  const displayNuevos = mode === "nuevo" ? filteredNuevos : nuevosArchivos;
 
   const handleModeChange = (newMode: "existente" | "nuevo") => {
     setMode(newMode);
