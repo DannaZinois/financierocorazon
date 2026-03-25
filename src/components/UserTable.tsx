@@ -3,7 +3,6 @@ import { Search, Eye, EyeOff, ChevronLeft, ChevronRight, Info } from "lucide-rea
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
