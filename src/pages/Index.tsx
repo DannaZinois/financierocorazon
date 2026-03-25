@@ -4,15 +4,17 @@ import AppSidebar from "@/components/AppSidebar";
 import UserTable from "@/components/UserTable";
 import FinancePage from "@/components/FinancePage";
 import FinanceDupPage from "@/components/FinanceDupPage";
+import DashboardPage from "@/components/DashboardPage";
 
 const Index = () => {
-  const [activeSection, setActiveSection] = useState("users");
+  const [activeSection, setActiveSection] = useState("dashboard");
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <TopBar />
       <div className="flex flex-1">
         <AppSidebar activeId={activeSection} onSelect={setActiveSection} />
+        {activeSection === "dashboard" && <DashboardPage />}
         {activeSection === "users" && <UserTable />}
         {activeSection === "finance" && <FinancePage />}
         {activeSection === "finance-dup" && <FinanceDupPage />}
