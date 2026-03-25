@@ -782,7 +782,24 @@ const FinanceDupPage = () => {
 
   // If viewing a file detail, show that instead
   if (viewingDoc) {
-    return <FileDetailView doc={viewingDoc} onBack={() => setViewingDoc(null)} />;
+    return (
+      <FileDetailView
+        doc={viewingDoc}
+        allDocs={existenteDocs}
+        onBack={(addedCount: number) => {
+          if (addedCount > 0) {
+            setExistenteDocs((prev) =>
+              prev.map((d) =>
+                d.id === viewingDoc.id
+                  ? { ...d, copyLabel: d.copyLabel ? `${d.copyLabel} y otros ${addedCount} archivos` : `y otros ${addedCount} archivos` }
+                  : d
+              )
+            );
+          }
+          setViewingDoc(null);
+        }}
+      />
+    );
   }
 
   return (
