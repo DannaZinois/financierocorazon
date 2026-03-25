@@ -618,7 +618,7 @@ const FinanceDupPage = () => {
                 </TableCell>
               </TableRow>
             ))}
-            {filteredExistente.length === 0 && (
+            {displayExistente.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   No se encontraron documentos con los filtros seleccionados.
