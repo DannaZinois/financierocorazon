@@ -400,6 +400,18 @@ const FinanceDupPage = () => {
 
   const filteredExistente = getFilteredDocs(existenteDocs);
 
+  const handleModeChange = (newMode: "existente" | "nuevo") => {
+    setMode(newMode);
+    if (newMode === "nuevo") {
+      const filtered = getFilteredDocs(existenteDocs);
+      setNuevosArchivos((prev) => {
+        const existingIds = new Set(prev.map((r) => r.id));
+        const newOnes = filtered.filter((d) => !existingIds.has(d.id));
+        return [...prev, ...newOnes];
+      });
+    }
+  };
+
   const handleAgregarBuscar = () => {
     if (mode === "nuevo") {
       const filtered = getFilteredDocs(existenteDocs);
@@ -516,14 +528,14 @@ const FinanceDupPage = () => {
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <Checkbox
                   checked={mode === "existente"}
-                  onCheckedChange={() => setMode("existente")}
+                  onCheckedChange={() => handleModeChange("existente")}
                 />
                 Existente
               </label>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <Checkbox
                   checked={mode === "nuevo"}
-                  onCheckedChange={() => setMode("nuevo")}
+                  onCheckedChange={() => handleModeChange("nuevo")}
                 />
                 Nuevo
               </label>
