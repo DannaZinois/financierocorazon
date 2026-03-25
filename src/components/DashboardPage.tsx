@@ -140,19 +140,24 @@ const DashboardPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Dashboard Financiero</h1>
           <p className="text-sm text-muted-foreground">Resumen de indicadores clave de rendimiento</p>
         </div>
-        <div className="flex gap-2">
-          <Select value={selectedCadena} onValueChange={setSelectedCadena}>
-            <SelectTrigger className="w-[180px] bg-card border-border text-sm">
-              <SelectValue placeholder="Cadena" />
-            </SelectTrigger>
-            <SelectContent>
-              {cadenas.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={selectedLoc} onValueChange={setSelectedLoc}>
-            <SelectTrigger className="w-[160px] bg-card border-border text-sm">
-              <SelectValue placeholder="Sucursal" />
-            </SelectTrigger>
+        <div className="flex gap-3 items-center">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground font-medium">Cadena</span>
+            <Select value={selectedCadena} onValueChange={setSelectedCadena}>
+              <SelectTrigger className="w-[180px] bg-card border-border text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {cadenas.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground font-medium">Sucursal</span>
+            <Select value={selectedLoc} onValueChange={setSelectedLoc}>
+              <SelectTrigger className="w-[160px] bg-card border-border text-sm">
+                <SelectValue />
+              </SelectTrigger>
             <SelectContent>
               {localizaciones.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
             </SelectContent>
