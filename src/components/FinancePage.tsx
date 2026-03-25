@@ -381,47 +381,57 @@ const FinancePage = () => {
         </div>
       )}
 
-      <Dialog open={!!desgloseCol} onOpenChange={(open) => { if (!open) setDesgloseCol(null); }}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Desglose: {desgloseCol}</DialogTitle>
-          </DialogHeader>
-          <div className="bg-card rounded-lg border border-border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-secondary">
-                  <TableHead className="font-semibold text-foreground">Nombre de dato</TableHead>
-                  <TableHead className="font-semibold text-foreground">Cantidad del gasto</TableHead>
-                  <TableHead className="font-semibold text-foreground">Tipo</TableHead>
-                  <TableHead className="font-semibold text-foreground">Fecha de generación</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockDesglose.map((row, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="text-muted-foreground">{row.nombre}</TableCell>
-                    <TableCell className="text-foreground">{row.cantidad}</TableCell>
-                    <TableCell>
-                      <Select>
-                        <SelectTrigger className="w-48">
-                          <SelectValue placeholder="Selecciona una opción" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="tipo1">Tipo 1</SelectItem>
-                          <SelectItem value="tipo2">Tipo 2</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{row.fecha}</TableCell>
+      <Dialog open={!!desgloseCol} onOpenChange={(open) => { if (!open) { setDesgloseCol(null); setDesglosePeriod(null); } }}>
+        <DialogContent className="max-w-3xl [&>button]:hidden p-0 border-none bg-transparent shadow-none">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setDesgloseCol(null); setDesglosePeriod(null); }} />
+          <div className="relative bg-card rounded-2xl shadow-xl p-8 z-10">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">Desglose: {desgloseCol}</DialogTitle>
+            </DialogHeader>
+            <div className="bg-card rounded-lg border border-border overflow-hidden mt-4">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-secondary">
+                    <TableHead className="font-semibold text-foreground">Nombre de dato</TableHead>
+                    <TableHead className="font-semibold text-foreground">Cantidad del gasto</TableHead>
+                    <TableHead className="font-semibold text-foreground">Tipo</TableHead>
+                    <TableHead className="font-semibold text-foreground">Fecha de generación</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="flex justify-end mt-2">
-            <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => setDesgloseCol(null)}>
-              Cerrar
-            </Button>
+                </TableHeader>
+                <TableBody>
+                  {(desgloseCol && desgloseData[desgloseCol] ? desgloseData[desgloseCol] : []).map((row, i) => {
+                    const mesIdx = desglosePeriod ? meses.indexOf(desglosePeriod.mes) + 1 : 1;
+                    const año = desglosePeriod?.año || "2025";
+                    const day = String(Math.min((i + 1) * 5, 28)).padStart(2, "0");
+                    const fecha = `${day}/${String(mesIdx).padStart(2, "0")}/${año}`;
+                    return (
+                      <TableRow key={i}>
+                        <TableCell className="text-muted-foreground">{row.nombre}</TableCell>
+                        <TableCell className="text-foreground">{row.cantidad}</TableCell>
+                        <TableCell>
+                          <Select defaultValue={row.tipo}>
+                            <SelectTrigger className="w-48">
+                              <SelectValue placeholder="Selecciona una opción" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="fijo">Fijo</SelectItem>
+                              <SelectItem value="operativo">Operativo</SelectItem>
+                              <SelectItem value="extraordinario">Extraordinario</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{fecha}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex justify-end mt-4">
+              <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => { setDesgloseCol(null); setDesglosePeriod(null); }}>
+                Cerrar
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
