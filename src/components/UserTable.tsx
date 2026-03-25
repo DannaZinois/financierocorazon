@@ -115,7 +115,7 @@ const UserTable = () => {
             }}
           />
         </div>
-        <Button>+ Nuevo Usuario</Button>
+        <Button onClick={() => setNewUserOpen(true)}>+ Nuevo Usuario</Button>
       </div>
 
       <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
