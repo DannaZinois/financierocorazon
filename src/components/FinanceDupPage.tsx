@@ -726,6 +726,8 @@ const FinanceDupPage = () => {
   const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([...baseMockDocs]);
   const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
   const [viewingDoc, setViewingDoc] = useState<DocRow | null>(null);
+  const [mainDuplicateMsg, setMainDuplicateMsg] = useState<string>("");
+  const [mainFilterError, setMainFilterError] = useState(false);
 
   const getFilteredDocs = (docs: DocRow[]) =>
     docs.filter((doc) => {
