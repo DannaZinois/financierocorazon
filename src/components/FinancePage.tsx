@@ -235,7 +235,7 @@ const FinancePage = () => {
               selected={selectedAños}
               onChange={setSelectedAños}
             />
-            <Button className="rounded-full bg-primary text-primary-foreground px-6">
+            <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6">
               Exportar a pdf
             </Button>
             <Button className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6">
@@ -300,7 +300,7 @@ const FinancePage = () => {
                 </div>
 
                 <div className="flex justify-end mt-4">
-                  <Button className="rounded-full bg-destructive text-destructive-foreground px-8">
+                  <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8">
                     Publicar
                   </Button>
                 </div>
