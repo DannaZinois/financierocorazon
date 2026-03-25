@@ -332,28 +332,58 @@ const FileDetailView = ({
   const handleSearch = () => {
     setDuplicateMsg("");
     setFilterError(false);
-    const filtered = allDocs.filter((d) => {
-      if (d.id === doc.id) return false;
-      if (fCadena && fCadena !== "__all__" && d.cadena !== fCadena) return false;
-      if (fLoc && fLoc !== "__all__" && d.localizacion !== fLoc) return false;
-      if (fMeses.length > 0 && !fMeses.includes(d.mes)) return false;
-      if (fAños.length > 0 && !fAños.includes(d.año)) return false;
-      return true;
-    });
-    // Check for duplicates
-    const existingIds = new Set(addedDocs.map((r) => r.id));
-    const newOnes = filtered.filter((d) => !existingIds.has(d.id));
-    if (newOnes.length === 0 && filtered.length > 0) {
+
+    // Determine which cadenas, locs, meses, años to search
+    const searchCadenas = fCadena && fCadena !== "__all__" ? [fCadena] : cadenas;
+    const searchLocs = fLoc && fLoc !== "__all__" ? [fLoc] : localizaciones;
+    const searchMeses = fMeses.length > 0 ? fMeses : [];
+    const searchAños = fAños.length > 0 ? fAños : [];
+
+    if (searchMeses.length === 0 || searchAños.length === 0) {
+      setDuplicateMsg("Selecciona al menos un mes y un año");
+      setFilterError(true);
+      return;
+    }
+
+    // Generate docs for all combinations
+    const generatedDocs: DocRow[] = [];
+    for (const c of searchCadenas) {
+      for (const l of searchLocs) {
+        for (const m of searchMeses) {
+          for (const a of searchAños) {
+            // Skip if it's the current doc
+            if (c === doc.cadena && l === doc.localizacion && m === doc.mes && a === doc.año) continue;
+            generatedDocs.push({
+              id: nextId++,
+              cadena: c,
+              localizacion: l,
+              mes: m,
+              año: a,
+              fecha: generarFecha(m, a, Math.floor(Math.random() * 28) + 1),
+              usuario: nombresUsuarios[Math.floor(Math.random() * nombresUsuarios.length)],
+              cambios: Math.floor(Math.random() * 200) + 50,
+            });
+          }
+        }
+      }
+    }
+
+    // Check for duplicates against already added docs
+    const existingKeys = new Set(addedDocs.map((r) => `${r.cadena}-${r.localizacion}-${r.mes}-${r.año}`));
+    // Also check the main doc
+    existingKeys.add(`${doc.cadena}-${doc.localizacion}-${doc.mes}-${doc.año}`);
+    const newOnes = generatedDocs.filter((d) => !existingKeys.has(`${d.cadena}-${d.localizacion}-${d.mes}-${d.año}`));
+
+    if (newOnes.length === 0) {
       setDuplicateMsg("Esta tabla ya ha sido seleccionada");
       setFilterError(true);
       return;
     }
-    setAddedDocs((prev) => {
-      const newValues: Record<number, string[]> = {};
-      newOnes.forEach((d) => { newValues[d.id] = [...mockRows[0]]; });
-      setAddedTableValues((pv) => ({ ...pv, ...newValues }));
-      return [...prev, ...newOnes];
-    });
+
+    const newValues: Record<number, string[]> = {};
+    newOnes.forEach((d) => { newValues[d.id] = [...mockRows[0]]; });
+    setAddedTableValues((pv) => ({ ...pv, ...newValues }));
+    setAddedDocs((prev) => [...prev, ...newOnes]);
   };
 
   const toggleMes = (m: string) => setFMeses((prev) => prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]);
