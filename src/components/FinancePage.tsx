@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Filter, ArrowRight, Lock, ChevronDown } from "lucide-react";
+import { Filter, ArrowRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -265,8 +265,8 @@ const FinancePage = () => {
             }
             return combos.map(({ mes, año }) => (
               <div key={`${mes}-${año}`} className="mb-8">
-                <h3 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
-                  {mes} {año} <Lock className="w-5 h-5 text-destructive" />
+                <h3 className="text-xl font-bold text-foreground mb-1">
+                  {mes} {año}
                 </h3>
                 <p className="text-sm text-foreground">Fecha de última actualización: 00/00/0000</p>
                 <p className="text-sm text-foreground">Editado por: Usuario Jane Doe</p>
