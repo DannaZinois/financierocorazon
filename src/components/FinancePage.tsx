@@ -181,6 +181,7 @@ const FinancePage = () => {
   const [selectedAños, setSelectedAños] = useState<string[]>([]);
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
   const [desglosePeriod, setDesglosePeriod] = useState<{ mes: string; año: string } | null>(null);
+  const [showPdfDialog, setShowPdfDialog] = useState(false);
 
   const filtered = mockBranches.filter((b) => {
     if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
