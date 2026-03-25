@@ -913,6 +913,9 @@ const FinanceDupPage = () => {
             Agregar
           </Button>
         </div>
+        {mainDuplicateMsg && (
+          <p className="text-red-500 text-sm font-medium mt-2">{mainDuplicateMsg}</p>
+        )}
       </div>
 
       {/* Existing documents table - always shown */}
