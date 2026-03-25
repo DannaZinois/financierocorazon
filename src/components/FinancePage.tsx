@@ -115,7 +115,7 @@ const MultiCheckDropdown = ({
   );
 };
 
-
+const FinancePage = () => {
   const [cadenaFilter, setCadenaFilter] = useState<string>("");
   const [locFilter, setLocFilter] = useState<string>("");
   const [selectedBranch, setSelectedBranch] = useState<BranchCard | null>(null);
