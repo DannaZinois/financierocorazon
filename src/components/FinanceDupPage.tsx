@@ -574,7 +574,7 @@ const FinanceDupPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredExistente.map((doc) => (
+            {displayExistente.map((doc) => (
               <TableRow key={doc.id}>
                 <TableCell className="text-foreground">
                   {doc.cadena} - {doc.localizacion}
