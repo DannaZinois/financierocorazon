@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Filter, ArrowRight, Lock } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Filter, ArrowRight, Lock, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +53,67 @@ const financeColumns = [
 const mockRows = [
   ["150000", "32000", "45000", "28000", "30%", "12000", "138000", "89000", "64%", "49000", "35%"],
 ];
+
+const MultiCheckDropdown = ({
+  label,
+  labelClass,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  labelClass?: string;
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const toggle = (val: string) => {
+    onChange(
+      selected.includes(val) ? selected.filter((x) => x !== val) : [...selected, val]
+    );
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <p className={`text-sm font-medium mb-1 ${labelClass ?? "text-foreground"}`}>{label}</p>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-48 border border-input rounded-md bg-card px-3 py-2 text-sm"
+      >
+        <span className="truncate text-muted-foreground">
+          {selected.length > 0 ? selected.join(", ") : "Selecciona"}
+        </span>
+        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 w-48 border border-input rounded-md bg-card shadow-lg p-2 max-h-48 overflow-auto space-y-1">
+          {options.map((o) => (
+            <label key={o} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary rounded px-1 py-0.5">
+              <input
+                type="checkbox"
+                checked={selected.includes(o)}
+                onChange={() => toggle(o)}
+                className="accent-primary"
+              />
+              {o}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const FinancePage = () => {
   const [cadenaFilter, setCadenaFilter] = useState<string>("");
@@ -160,46 +221,20 @@ const FinancePage = () => {
           </h2>
 
           <div className="flex items-end gap-4 mb-6">
-            <div>
-              <p className="text-sm font-medium text-primary mb-1">Meses</p>
-              <div className="w-48 border border-input rounded-md bg-card p-2 max-h-40 overflow-auto space-y-1">
-                {meses.map((m) => (
-                  <label key={m} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary rounded px-1">
-                    <input
-                      type="checkbox"
-                      checked={selectedMeses.includes(m)}
-                      onChange={() =>
-                        setSelectedMeses((prev) =>
-                          prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
-                        )
-                      }
-                      className="accent-primary"
-                    />
-                    {m}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground mb-1">Años</p>
-              <div className="w-48 border border-input rounded-md bg-card p-2 space-y-1">
-                {años.map((a) => (
-                  <label key={a} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-secondary rounded px-1">
-                    <input
-                      type="checkbox"
-                      checked={selectedAños.includes(a)}
-                      onChange={() =>
-                        setSelectedAños((prev) =>
-                          prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
-                        )
-                      }
-                      className="accent-primary"
-                    />
-                    {a}
-                  </label>
-                ))}
-              </div>
-            </div>
+            <MultiCheckDropdown
+              label="Meses"
+              labelClass="text-primary"
+              options={meses}
+              selected={selectedMeses}
+              onChange={setSelectedMeses}
+            />
+            <MultiCheckDropdown
+              label="Años"
+              labelClass="text-foreground"
+              options={años}
+              selected={selectedAños}
+              onChange={setSelectedAños}
+            />
             <Button className="rounded-full bg-primary text-primary-foreground px-6">
               Exportar a pdf
             </Button>
