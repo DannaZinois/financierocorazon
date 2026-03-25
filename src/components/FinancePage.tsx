@@ -238,7 +238,7 @@ const FinancePage = () => {
             <Button className="rounded-full bg-primary text-primary-foreground px-6">
               Exportar a pdf
             </Button>
-            <Button className="rounded-full bg-warning text-warning-foreground px-6">
+            <Button className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6">
               Historial de versiones
             </Button>
           </div>
