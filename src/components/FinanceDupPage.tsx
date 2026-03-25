@@ -569,7 +569,7 @@ const FileDetailView = ({
       </button>
 
       <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: '"Myanmar MN", sans-serif' }}>
-        {doc.cadena} - {doc.localizacion}
+        Mostrando archivos duplicados
       </h1>
       <p className="text-muted-foreground mb-6">
         Archivo financiero: {doc.mes} {doc.año}
