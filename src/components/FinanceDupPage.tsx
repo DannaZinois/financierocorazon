@@ -294,6 +294,7 @@ const FileDetailView = ({
   onBack: () => void;
 }) => {
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
+  const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [desgloseRows, setDesgloseRows] = useState<DesgloseRow[]>([]);
   const [tableValues, setTableValues] = useState<string[]>([...mockRows[0]]);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
