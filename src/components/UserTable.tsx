@@ -24,6 +24,7 @@ interface UserRecord {
   createdAt: string;
   active: boolean;
   branches: number;
+  password: string;
 }
 
 const mockUsers: UserRecord[] = Array.from({ length: 160 }, (_, i) => ({
@@ -33,6 +34,7 @@ const mockUsers: UserRecord[] = Array.from({ length: 160 }, (_, i) => ({
   createdAt: "00/00/0000",
   active: true,
   branches: 4,
+  password: "Pass1234!",
 }));
 
 const PAGE_SIZE = 10;
@@ -65,6 +67,12 @@ const UserTable = () => {
       }
       return next;
     });
+  };
+
+  const updatePassword = (id: number, newPassword: string) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, password: newPassword } : u))
+    );
   };
 
   return (
@@ -129,17 +137,27 @@ const UserTable = () => {
                 <TableCell>{user.role}</TableCell>
                 <TableCell>{user.createdAt}</TableCell>
                 <TableCell>
-                  <button
-                    onClick={() => togglePasswordVisibility(user.id)}
-                    className="inline-flex items-center gap-2 text-sm text-foreground hover:opacity-80 transition-opacity"
-                  >
-                    Cambiar contraseña
+                  <div className="inline-flex items-center gap-2">
                     {visiblePasswords.has(user.id) ? (
-                      <Eye className="w-4 h-4 text-green-500" />
+                      <Input
+                        value={user.password}
+                        onChange={(e) => updatePassword(user.id, e.target.value)}
+                        className="h-7 w-32 text-sm"
+                      />
                     ) : (
-                      <EyeOff className="w-4 h-4 text-orange-500" />
+                      <span className="text-sm text-muted-foreground">••••••••</span>
                     )}
-                  </button>
+                    <button
+                      onClick={() => togglePasswordVisibility(user.id)}
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      {visiblePasswords.has(user.id) ? (
+                        <Eye className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-orange-500" />
+                      )}
+                    </button>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
