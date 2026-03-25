@@ -62,10 +62,55 @@ const mockRows = [
   ["150000", "32000", "45000", "28000", "30%", "12000", "138000", "89000", "64%", "49000", "35%"],
 ];
 
-const mockDesglose = [
-  { nombre: "Nombre aquí", cantidad: "$0000", tipo: "", fecha: "Fecha" },
-  { nombre: "Nombre aquí", cantidad: "$0000", tipo: "", fecha: "Fecha" },
-];
+const desgloseData: Record<string, { nombre: string; cantidad: string; tipo: string; fecha: string }[]> = {
+  "Ventas brutas": [
+    { nombre: "Venta en comedor", cantidad: "$85000", tipo: "fijo", fecha: "" },
+    { nombre: "Venta para llevar", cantidad: "$35000", tipo: "operativo", fecha: "" },
+    { nombre: "Venta por delivery", cantidad: "$20000", tipo: "operativo", fecha: "" },
+    { nombre: "Eventos privados", cantidad: "$10000", tipo: "extraordinario", fecha: "" },
+  ],
+  "Inventario inicial": [
+    { nombre: "Proteínas y carnes", cantidad: "$12000", tipo: "fijo", fecha: "" },
+    { nombre: "Frutas y verduras", cantidad: "$8000", tipo: "operativo", fecha: "" },
+    { nombre: "Lácteos y huevos", cantidad: "$5000", tipo: "fijo", fecha: "" },
+    { nombre: "Bebidas y licores", cantidad: "$7000", tipo: "fijo", fecha: "" },
+  ],
+  "Compra": [
+    { nombre: "Compra de mariscos", cantidad: "$15000", tipo: "operativo", fecha: "" },
+    { nombre: "Compra de vegetales", cantidad: "$10000", tipo: "operativo", fecha: "" },
+    { nombre: "Insumos de cocina", cantidad: "$8000", tipo: "fijo", fecha: "" },
+    { nombre: "Bebidas alcohólicas", cantidad: "$7000", tipo: "operativo", fecha: "" },
+    { nombre: "Productos de limpieza", cantidad: "$5000", tipo: "fijo", fecha: "" },
+  ],
+  "Inventario final": [
+    { nombre: "Proteínas restantes", cantidad: "$10000", tipo: "fijo", fecha: "" },
+    { nombre: "Verduras en almacén", cantidad: "$6000", tipo: "operativo", fecha: "" },
+    { nombre: "Lácteos en cámara fría", cantidad: "$5000", tipo: "fijo", fecha: "" },
+    { nombre: "Licores en barra", cantidad: "$7000", tipo: "fijo", fecha: "" },
+  ],
+  "Dev Desc a VTA": [
+    { nombre: "Descuento por temporada", cantidad: "$5000", tipo: "extraordinario", fecha: "" },
+    { nombre: "Devolución de platillos", cantidad: "$3000", tipo: "operativo", fecha: "" },
+    { nombre: "Cortesías a clientes", cantidad: "$4000", tipo: "extraordinario", fecha: "" },
+  ],
+  "Venta Neta": [
+    { nombre: "Ingreso neto comedor", cantidad: "$78000", tipo: "fijo", fecha: "" },
+    { nombre: "Ingreso neto delivery", cantidad: "$32000", tipo: "operativo", fecha: "" },
+    { nombre: "Ingreso neto eventos", cantidad: "$28000", tipo: "extraordinario", fecha: "" },
+  ],
+  "Costo venta": [
+    { nombre: "Costo de alimentos", cantidad: "$45000", tipo: "fijo", fecha: "" },
+    { nombre: "Costo de bebidas", cantidad: "$18000", tipo: "operativo", fecha: "" },
+    { nombre: "Merma y desperdicio", cantidad: "$12000", tipo: "operativo", fecha: "" },
+    { nombre: "Empaque para llevar", cantidad: "$8000", tipo: "fijo", fecha: "" },
+    { nombre: "Gas y energéticos", cantidad: "$6000", tipo: "fijo", fecha: "" },
+  ],
+  "Utilidad bruta": [
+    { nombre: "Margen de alimentos", cantidad: "$30000", tipo: "fijo", fecha: "" },
+    { nombre: "Margen de bebidas", cantidad: "$12000", tipo: "operativo", fecha: "" },
+    { nombre: "Margen de eventos", cantidad: "$7000", tipo: "extraordinario", fecha: "" },
+  ],
+};
 
 const MultiCheckDropdown = ({
   label,
