@@ -745,14 +745,8 @@ const FinanceDupPage = () => {
 
   const handleModeChange = (newMode: "existente" | "nuevo") => {
     setMode(newMode);
-    if (newMode === "nuevo") {
-      const filtered = getFilteredDocs(existenteDocs);
-      setNuevosArchivos((prev) => {
-        const existingIds = new Set(prev.map((r) => r.id));
-        const newOnes = filtered.filter((d) => !existingIds.has(d.id));
-        return [...prev, ...newOnes];
-      });
-    }
+    setMainDuplicateMsg("");
+    setMainFilterError(false);
   };
 
   const handleAgregarBuscar = () => {
