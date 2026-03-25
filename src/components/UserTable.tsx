@@ -41,9 +41,12 @@ const defaultBranches: Branch[] = [
   { id: 4, cadena: "Kokoro", nombre: "Punto Sao Paulo" },
 ];
 
+const emailDomains = ["gmail.com", "outlook.com", "yahoo.com", "hotmail.com", "empresa.mx"];
+const emailNames = ["carlos.lopez", "maria.garcia", "juan.martinez", "ana.hernandez", "pedro.sanchez", "laura.ramirez", "diego.flores", "sofia.torres", "miguel.reyes", "valentina.cruz", "roberto.diaz", "camila.morales", "fernando.ortiz", "gabriela.rivas", "andres.mendoza", "patricia.luna", "ricardo.vargas", "daniela.castro", "alejandro.rojas", "monica.guerrero"];
+
 const mockUsers: UserRecord[] = Array.from({ length: 160 }, (_, i) => ({
   id: i + 1,
-  email: "johndoe@correo.com",
+  email: `${emailNames[i % emailNames.length]}@${emailDomains[i % emailDomains.length]}`,
   role: ["Admin", "Tesorería", "Socio"][i % 3],
   createdAt: "00/00/0000",
   active: true,
@@ -101,7 +104,7 @@ const UserTable = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar usuario"
+            placeholder="Buscar correo de usuario"
             className="pl-9 w-72 bg-card"
             value={search}
             onChange={(e) => {
