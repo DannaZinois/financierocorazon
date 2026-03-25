@@ -535,7 +535,7 @@ const FinanceDupPage = () => {
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <Checkbox
                   checked={mode === "nuevo"}
-                  onCheckedChange={() => setMode("nuevo")}
+                  onCheckedChange={() => handleModeChange("nuevo")}
                 />
                 Nuevo
               </label>
