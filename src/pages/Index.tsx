@@ -3,6 +3,7 @@ import TopBar from "@/components/TopBar";
 import AppSidebar from "@/components/AppSidebar";
 import UserTable from "@/components/UserTable";
 import FinancePage from "@/components/FinancePage";
+import FinanceDupPage from "@/components/FinanceDupPage";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("users");
@@ -14,7 +15,7 @@ const Index = () => {
         <AppSidebar activeId={activeSection} onSelect={setActiveSection} />
         {activeSection === "users" && <UserTable />}
         {activeSection === "finance" && <FinancePage />}
-        {activeSection === "finance-dup" && <FinancePage />}
+        {activeSection === "finance-dup" && <FinanceDupPage />}
       </div>
     </div>
   );
