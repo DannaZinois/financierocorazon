@@ -300,6 +300,8 @@ const FileDetailView = ({
   const [desgloseRows, setDesgloseRows] = useState<DesgloseRow[]>([]);
   const [tableValues, setTableValues] = useState<string[]>([...mockRows[0]]);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
+  const [duplicateMsg, setDuplicateMsg] = useState<string>("");
+  const [filterError, setFilterError] = useState(false);
 
   // Filters
   const [fCadena, setFCadena] = useState<string>("");
