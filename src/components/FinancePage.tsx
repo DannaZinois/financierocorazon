@@ -243,49 +243,70 @@ const FinancePage = () => {
             </Button>
           </div>
 
-          <h3 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
-            {selectedMeses.length > 0 || selectedAños.length > 0
-              ? `${selectedMeses.join(", ")}${selectedMeses.length > 0 && selectedAños.length > 0 ? " — " : ""}${selectedAños.join(", ")}`
-              : "Mes y año seleccionados"
+          {(() => {
+            // Build sorted year-month combos: most recent year first, months in calendar order
+            const sortedAños = [...selectedAños].sort((a, b) => Number(b) - Number(a));
+            const orderedMeses = selectedMeses.sort(
+              (a, b) => meses.indexOf(a) - meses.indexOf(b)
+            );
+            const combos: { mes: string; año: string }[] = [];
+            for (const año of sortedAños) {
+              for (const mes of orderedMeses) {
+                combos.push({ mes, año });
+              }
             }
-            {" "}<Lock className="w-5 h-5 text-destructive" />
-          </h3>
-          <p className="text-sm text-foreground">Fecha de última actualización: 00/00/0000</p>
-          <p className="text-sm text-foreground">Editado por: Usuario Jane Doe</p>
-          <p className="text-sm text-foreground mb-4 flex items-center gap-1">
-            Estatus: Borrador <span className="w-2.5 h-2.5 rounded-full bg-success inline-block" />
-          </p>
+            // If no selection, show a placeholder
+            if (combos.length === 0) {
+              return (
+                <p className="text-muted-foreground text-sm italic">
+                  Selecciona al menos un mes y un año para ver los datos.
+                </p>
+              );
+            }
+            return combos.map(({ mes, año }) => (
+              <div key={`${mes}-${año}`} className="mb-8">
+                <h3 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
+                  {mes} {año} <Lock className="w-5 h-5 text-destructive" />
+                </h3>
+                <p className="text-sm text-foreground">Fecha de última actualización: 00/00/0000</p>
+                <p className="text-sm text-foreground">Editado por: Usuario Jane Doe</p>
+                <p className="text-sm text-foreground mb-4 flex items-center gap-1">
+                  Estatus: Borrador <span className="w-2.5 h-2.5 rounded-full bg-success inline-block" />
+                </p>
 
-          <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-secondary">
-                  {financeColumns.map((col) => (
-                    <TableHead key={col} className="font-semibold text-foreground text-xs whitespace-nowrap">
-                      {col}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockRows.map((row, i) => (
-                  <TableRow key={i}>
-                    {row.map((cell, j) => (
-                      <TableCell key={j} className="text-sm text-foreground">
-                        {cell}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-secondary">
+                        {financeColumns.map((col) => (
+                          <TableHead key={col} className="font-semibold text-foreground text-xs whitespace-nowrap">
+                            {col}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {mockRows.map((row, i) => (
+                        <TableRow key={i}>
+                          {row.map((cell, j) => (
+                            <TableCell key={j} className="text-sm text-foreground">
+                              {cell}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
 
-          <div className="flex justify-end mt-4">
-            <Button className="rounded-full bg-destructive text-destructive-foreground px-8">
-              Publicar
-            </Button>
-          </div>
+                <div className="flex justify-end mt-4">
+                  <Button className="rounded-full bg-destructive text-destructive-foreground px-8">
+                    Publicar
+                  </Button>
+                </div>
+              </div>
+            ));
+          })()}
         </div>
       )}
     </div>
