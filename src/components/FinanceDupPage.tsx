@@ -300,6 +300,8 @@ const FileDetailView = ({
   const [desgloseRows, setDesgloseRows] = useState<DesgloseRow[]>([]);
   const [tableValues, setTableValues] = useState<string[]>([...mockRows[0]]);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
+  const [duplicateMsg, setDuplicateMsg] = useState<string>("");
+  const [filterError, setFilterError] = useState(false);
 
   // Filters
   const [fCadena, setFCadena] = useState<string>("");
@@ -328,6 +330,8 @@ const FileDetailView = ({
   }, []);
 
   const handleSearch = () => {
+    setDuplicateMsg("");
+    setFilterError(false);
     const filtered = allDocs.filter((d) => {
       if (d.id === doc.id) return false;
       if (fCadena && fCadena !== "__all__" && d.cadena !== fCadena) return false;
@@ -336,9 +340,15 @@ const FileDetailView = ({
       if (fAños.length > 0 && !fAños.includes(d.año)) return false;
       return true;
     });
+    // Check for duplicates
+    const existingIds = new Set(addedDocs.map((r) => r.id));
+    const newOnes = filtered.filter((d) => !existingIds.has(d.id));
+    if (newOnes.length === 0 && filtered.length > 0) {
+      setDuplicateMsg("Esta tabla ya ha sido seleccionada");
+      setFilterError(true);
+      return;
+    }
     setAddedDocs((prev) => {
-      const existingIds = new Set(prev.map((r) => r.id));
-      const newOnes = filtered.filter((d) => !existingIds.has(d.id));
       const newValues: Record<number, string[]> = {};
       newOnes.forEach((d) => { newValues[d.id] = [...mockRows[0]]; });
       setAddedTableValues((pv) => ({ ...pv, ...newValues }));
@@ -570,8 +580,8 @@ const FileDetailView = ({
         <div className="flex flex-wrap items-start gap-6 mb-4">
           <div className="min-w-[180px]">
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Cadena <Filter className="w-3.5 h-3.5" /></div>
-            <Select value={fCadena} onValueChange={setFCadena}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+            <Select value={fCadena} onValueChange={(v) => { setFCadena(v); setFilterError(false); setDuplicateMsg(""); }}>
+              <SelectTrigger className={cn("w-full", filterError && "border-red-500")}><SelectValue placeholder="Selecciona" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
                 {cadenas.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -580,8 +590,8 @@ const FileDetailView = ({
           </div>
           <div className="min-w-[180px]">
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Localización <Filter className="w-3.5 h-3.5" /></div>
-            <Select value={fLoc} onValueChange={setFLoc}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+            <Select value={fLoc} onValueChange={(v) => { setFLoc(v); setFilterError(false); setDuplicateMsg(""); }}>
+              <SelectTrigger className={cn("w-full", filterError && "border-red-500")}><SelectValue placeholder="Selecciona" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
                 {localizaciones.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
@@ -590,14 +600,14 @@ const FileDetailView = ({
           </div>
           <div className="min-w-[180px] relative" ref={mesRef}>
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Mes <Filter className="w-3.5 h-3.5" /></div>
-            <button className="flex items-center justify-between w-full rounded-md border border-input bg-background px-3 py-2 text-sm" onClick={() => setMesDropOpen(!mesDropOpen)}>
+            <button className={cn("flex items-center justify-between w-full rounded-md border bg-background px-3 py-2 text-sm", filterError ? "border-red-500" : "border-input")} onClick={() => setMesDropOpen(!mesDropOpen)}>
               <span className="truncate">{fMeses.length ? fMeses.join(", ") : "Selecciona"}</span><ChevronDown className="w-4 h-4 opacity-50" />
             </button>
             {mesDropOpen && (
               <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-2 max-h-52 overflow-auto">
                 {meses.map((m) => (
                   <label key={m} className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer text-sm">
-                    <Checkbox checked={fMeses.includes(m)} onCheckedChange={() => toggleMes(m)} />{m}
+                    <Checkbox checked={fMeses.includes(m)} onCheckedChange={() => { toggleMes(m); setFilterError(false); setDuplicateMsg(""); }} />{m}
                   </label>
                 ))}
               </div>
@@ -605,14 +615,14 @@ const FileDetailView = ({
           </div>
           <div className="min-w-[140px] relative" ref={añoRef}>
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">Año <Filter className="w-3.5 h-3.5" /></div>
-            <button className="flex items-center justify-between w-full rounded-md border border-input bg-background px-3 py-2 text-sm" onClick={() => setAñoDropOpen(!añoDropOpen)}>
+            <button className={cn("flex items-center justify-between w-full rounded-md border bg-background px-3 py-2 text-sm", filterError ? "border-red-500" : "border-input")} onClick={() => setAñoDropOpen(!añoDropOpen)}>
               <span className="truncate">{fAños.length ? fAños.join(", ") : "Selecciona"}</span><ChevronDown className="w-4 h-4 opacity-50" />
             </button>
             {añoDropOpen && (
               <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-2">
                 {años.map((a) => (
                   <label key={a} className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent rounded cursor-pointer text-sm">
-                    <Checkbox checked={fAños.includes(a)} onCheckedChange={() => toggleAño(a)} />{a}
+                    <Checkbox checked={fAños.includes(a)} onCheckedChange={() => { toggleAño(a); setFilterError(false); setDuplicateMsg(""); }} />{a}
                   </label>
                 ))}
               </div>
@@ -620,10 +630,13 @@ const FileDetailView = ({
           </div>
           <div className="flex items-end min-w-[140px]">
             <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6 mt-6" onClick={handleSearch}>
-              Agregar o buscar
+              Agregar
             </Button>
           </div>
         </div>
+        {duplicateMsg && (
+          <p className="text-red-500 text-sm font-medium mt-2">{duplicateMsg}</p>
+        )}
       </div>
 
       {/* Main doc table */}
@@ -713,6 +726,8 @@ const FinanceDupPage = () => {
   const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([...baseMockDocs]);
   const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
   const [viewingDoc, setViewingDoc] = useState<DocRow | null>(null);
+  const [mainDuplicateMsg, setMainDuplicateMsg] = useState<string>("");
+  const [mainFilterError, setMainFilterError] = useState(false);
 
   const getFilteredDocs = (docs: DocRow[]) =>
     docs.filter((doc) => {
@@ -741,15 +756,20 @@ const FinanceDupPage = () => {
   };
 
   const handleAgregarBuscar = () => {
+    setMainDuplicateMsg("");
+    setMainFilterError(false);
     if (mode === "nuevo") {
       const filtered = getFilteredDocs(existenteDocs);
-      setNuevosArchivos((prev) => {
-        const existingIds = new Set(prev.map((r) => r.id));
-        const newOnes = filtered.filter((d) => !existingIds.has(d.id));
-        return [...prev, ...newOnes];
-      });
+      const existingIds = new Set(nuevosArchivos.map((r) => r.id));
+      const newOnes = filtered.filter((d) => !existingIds.has(d.id));
+      if (newOnes.length === 0 && filtered.length > 0) {
+        setMainDuplicateMsg("Esta tabla ya ha sido seleccionada");
+        setMainFilterError(true);
+        return;
+      }
+      setNuevosArchivos((prev) => [...prev, ...newOnes]);
     }
-    // For "existente" mode the table auto-filters, nothing extra needed
+    // For "existente" mode the table auto-filters
   };
 
   const removeDoc = (id: number, table: "existente" | "nuevo") => {
@@ -808,7 +828,7 @@ const FinanceDupPage = () => {
         className="text-3xl font-bold text-foreground mb-1"
         style={{ fontFamily: '"Myanmar MN", sans-serif' }}
       >
-        Duplicar y aislar versiones
+        Mostrando archivos duplicados
       </h1>
       <p className="text-muted-foreground mb-8">
         Consulta tus datos, actualiza, edita o borra lo necesario.
@@ -824,8 +844,8 @@ const FinanceDupPage = () => {
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">
               Cadena <Filter className="w-3.5 h-3.5" />
             </div>
-            <Select value={cadenaFilter} onValueChange={setCadenaFilter}>
-              <SelectTrigger className="w-full">
+            <Select value={cadenaFilter} onValueChange={(v) => { setCadenaFilter(v); setMainFilterError(false); setMainDuplicateMsg(""); }}>
+              <SelectTrigger className={cn("w-full", mainFilterError && "border-red-500")}>
                 <SelectValue placeholder="Selecciona una opción" />
               </SelectTrigger>
               <SelectContent>
@@ -840,8 +860,8 @@ const FinanceDupPage = () => {
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">
               Localización <Filter className="w-3.5 h-3.5" />
             </div>
-            <Select value={locFilter} onValueChange={setLocFilter}>
-              <SelectTrigger className="w-full">
+            <Select value={locFilter} onValueChange={(v) => { setLocFilter(v); setMainFilterError(false); setMainDuplicateMsg(""); }}>
+              <SelectTrigger className={cn("w-full", mainFilterError && "border-red-500")}>
                 <SelectValue placeholder="Selecciona una opción" />
               </SelectTrigger>
               <SelectContent>
@@ -890,9 +910,12 @@ const FinanceDupPage = () => {
             className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6"
             onClick={handleAgregarBuscar}
           >
-            Agregar o buscar
+            Agregar
           </Button>
         </div>
+        {mainDuplicateMsg && (
+          <p className="text-red-500 text-sm font-medium mt-2">{mainDuplicateMsg}</p>
+        )}
       </div>
 
       {/* Existing documents table - always shown */}
@@ -919,8 +942,9 @@ const FinanceDupPage = () => {
             {displayExistente.map((doc) => (
               <TableRow key={doc.id}>
                 <TableCell className="text-foreground">
-                  {doc.cadena} - {doc.localizacion}
-                  {doc.copyLabel && <span className="ml-2 text-muted-foreground text-xs">({doc.copyLabel})</span>}
+                  <div className="font-semibold">{doc.cadena} - {doc.localizacion}</div>
+                  <div className="text-muted-foreground text-xs">{doc.mes} {doc.año}</div>
+                  {doc.copyLabel && <span className="text-muted-foreground text-xs">({doc.copyLabel})</span>}
                 </TableCell>
                 <TableCell className="text-foreground">{doc.fecha}</TableCell>
                 <TableCell className="text-foreground">{doc.usuario}</TableCell>
@@ -1051,8 +1075,9 @@ const FinanceDupPage = () => {
             {displayNuevos.map((doc) => (
               <TableRow key={`nuevo-${doc.id}`}>
                 <TableCell className="text-foreground">
-                  {doc.cadena} - {doc.localizacion}
-                  {doc.copyLabel && <span className="ml-2 text-muted-foreground text-xs">({doc.copyLabel})</span>}
+                  <div className="font-semibold">{doc.cadena} - {doc.localizacion}</div>
+                  <div className="text-muted-foreground text-xs">{doc.mes} {doc.año}</div>
+                  {doc.copyLabel && <span className="text-muted-foreground text-xs">({doc.copyLabel})</span>}
                 </TableCell>
                 <TableCell className="text-foreground">{doc.fecha}</TableCell>
                 <TableCell>
