@@ -860,8 +860,8 @@ const FinanceDupPage = () => {
             <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">
               Localización <Filter className="w-3.5 h-3.5" />
             </div>
-            <Select value={locFilter} onValueChange={setLocFilter}>
-              <SelectTrigger className="w-full">
+            <Select value={locFilter} onValueChange={(v) => { setLocFilter(v); setMainFilterError(false); setMainDuplicateMsg(""); }}>
+              <SelectTrigger className={cn("w-full", mainFilterError && "border-red-500")}>
                 <SelectValue placeholder="Selecciona una opción" />
               </SelectTrigger>
               <SelectContent>
