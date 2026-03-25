@@ -34,6 +34,7 @@ const mockUsers: UserRecord[] = Array.from({ length: 160 }, (_, i) => ({
   createdAt: "00/00/0000",
   active: true,
   branches: 4,
+  password: "Pass1234!",
 }));
 
 const PAGE_SIZE = 10;
