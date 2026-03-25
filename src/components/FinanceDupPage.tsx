@@ -890,7 +890,7 @@ const FinanceDupPage = () => {
             className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6"
             onClick={handleAgregarBuscar}
           >
-            Agregar o buscar
+            Agregar
           </Button>
         </div>
       </div>
