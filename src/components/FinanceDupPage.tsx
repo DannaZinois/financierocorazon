@@ -687,63 +687,67 @@ const FinanceDupPage = () => {
         );
       })()}
 
-      {/* Nuevos archivos table - shown when mode is "nuevo" */}
-      {mode === "nuevo" && nuevosArchivos.length > 0 && (
-        <>
-          <h2
-            className="text-2xl font-bold text-foreground mb-6"
-            style={{ fontFamily: '"Myanmar MN", sans-serif' }}
-          >
-            Nuevos archivos para duplicar
-          </h2>
+      {/* Nuevos archivos table - always shown */}
+      <h2
+        className="text-2xl font-bold text-foreground mb-6"
+        style={{ fontFamily: '"Myanmar MN", sans-serif' }}
+      >
+        Nuevos archivos para duplicar
+      </h2>
 
-          <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md mb-8">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-secondary">
-                  <TableHead className="font-semibold text-foreground">Cadena y sucursal (localización)</TableHead>
-                  <TableHead className="font-semibold text-foreground">Fecha de última actualización</TableHead>
-                  <TableHead className="font-semibold text-foreground">Ver archivo</TableHead>
-                  <TableHead className="font-semibold text-foreground">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {nuevosArchivos.map((doc) => (
-                  <TableRow key={`nuevo-${doc.id}`}>
-                    <TableCell className="text-foreground">
-                      {doc.cadena} - {doc.localizacion}
-                      {doc.copyLabel && <span className="ml-2 text-muted-foreground text-xs">({doc.copyLabel})</span>}
-                    </TableCell>
-                    <TableCell className="text-foreground">{doc.fecha}</TableCell>
-                    <TableCell>
-                      <Button
-                        className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6 text-sm"
-                        onClick={() => setViewingDoc(doc)}
-                      >
-                        Ver archivo
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <button
-                          className="p-1.5 rounded hover:bg-accent text-primary"
-                          title="Crear copia"
-                          onClick={() => duplicateDoc(doc, "nuevo")}
-                        >
-                          <Copy className="w-5 h-5" />
-                        </button>
-                        <button
-                          className="p-1.5 rounded hover:bg-destructive/10 text-destructive"
-                          title="Borrar"
-                          onClick={() => removeDoc(doc.id, "nuevo")}
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+      <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md mb-8">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-secondary">
+              <TableHead className="font-semibold text-foreground">Cadena y sucursal (localización)</TableHead>
+              <TableHead className="font-semibold text-foreground">Fecha de última actualización</TableHead>
+              <TableHead className="font-semibold text-foreground">Ver archivo</TableHead>
+              <TableHead className="font-semibold text-foreground">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {displayNuevos.map((doc) => (
+              <TableRow key={`nuevo-${doc.id}`}>
+                <TableCell className="text-foreground">
+                  {doc.cadena} - {doc.localizacion}
+                  {doc.copyLabel && <span className="ml-2 text-muted-foreground text-xs">({doc.copyLabel})</span>}
+                </TableCell>
+                <TableCell className="text-foreground">{doc.fecha}</TableCell>
+                <TableCell>
+                  <Button
+                    className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6 text-sm"
+                    onClick={() => setViewingDoc(doc)}
+                  >
+                    Ver archivo
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="p-1.5 rounded hover:bg-accent text-primary"
+                      title="Crear copia"
+                      onClick={() => duplicateDoc(doc, "nuevo")}
+                    >
+                      <Copy className="w-5 h-5" />
+                    </button>
+                    <button
+                      className="p-1.5 rounded hover:bg-destructive/10 text-destructive"
+                      title="Borrar"
+                      onClick={() => removeDoc(doc.id, "nuevo")}
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {displayNuevos.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                  No hay archivos nuevos. Selecciona "Nuevo" y haz clic en "Agregar o buscar" para añadir.
+                </TableCell>
+              </TableRow>
+            )}
             </Table>
           </div>
         </>
