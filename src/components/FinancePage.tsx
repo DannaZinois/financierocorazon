@@ -409,18 +409,7 @@ const FinancePage = () => {
                       <TableRow key={i}>
                         <TableCell className="text-muted-foreground">{row.nombre}</TableCell>
                         <TableCell className="text-foreground">{row.cantidad}</TableCell>
-                        <TableCell>
-                          <Select defaultValue={row.tipo}>
-                            <SelectTrigger className="w-48">
-                              <SelectValue placeholder="Selecciona una opción" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="fijo">Fijo</SelectItem>
-                              <SelectItem value="operativo">Operativo</SelectItem>
-                              <SelectItem value="extraordinario">Extraordinario</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
+                        <TableCell className="text-foreground capitalize">{row.tipo}</TableCell>
                         <TableCell className="text-muted-foreground">{fecha}</TableCell>
                       </TableRow>
                     );
