@@ -69,6 +69,12 @@ const UserTable = () => {
     });
   };
 
+  const updatePassword = (id: number, newPassword: string) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, password: newPassword } : u))
+    );
+  };
+
   return (
     <div className="flex-1 p-8">
       <h1 className="text-3xl font-bold text-foreground mb-1">Gestión de usuarios</h1>
