@@ -808,7 +808,7 @@ const FinanceDupPage = () => {
         className="text-3xl font-bold text-foreground mb-1"
         style={{ fontFamily: '"Myanmar MN", sans-serif' }}
       >
-        Duplicar y aislar versiones
+        Mostrando archivos duplicados
       </h1>
       <p className="text-muted-foreground mb-8">
         Consulta tus datos, actualiza, edita o borra lo necesario.
