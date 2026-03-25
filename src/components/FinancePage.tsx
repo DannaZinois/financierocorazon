@@ -371,7 +371,7 @@ const FinancePage = () => {
                 </div>
 
                 <div className="flex justify-end mt-4">
-                  <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8">
+                  <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => setShowPublishConfirm(true)}>
                     Publicar
                   </Button>
                 </div>
