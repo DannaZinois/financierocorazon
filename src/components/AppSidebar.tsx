@@ -1,4 +1,4 @@
-import { Users, DollarSign, Copy, LogOut } from "lucide-react";
+import { Users, DollarSign, Copy, LogOut, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarItem {
@@ -8,6 +8,7 @@ interface SidebarItem {
 }
 
 const items: SidebarItem[] = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "users", label: "Gestión de usuarios", icon: Users },
   { id: "finance", label: "Financiero", icon: DollarSign },
   { id: "finance-dup", label: "Financiero: Duplicar y aislar", icon: Copy },

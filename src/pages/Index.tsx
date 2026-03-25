@@ -14,6 +14,7 @@ const Index = () => {
       <TopBar />
       <div className="flex flex-1">
         <AppSidebar activeId={activeSection} onSelect={setActiveSection} />
+        {activeSection === "dashboard" && <DashboardPage />}
         {activeSection === "users" && <UserTable />}
         {activeSection === "finance" && <FinancePage />}
         {activeSection === "finance-dup" && <FinanceDupPage />}
