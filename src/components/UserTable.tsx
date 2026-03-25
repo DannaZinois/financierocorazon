@@ -104,7 +104,7 @@ const UserTable = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar usuario"
+            placeholder="Buscar correo de usuario"
             className="pl-9 w-72 bg-card"
             value={search}
             onChange={(e) => {
