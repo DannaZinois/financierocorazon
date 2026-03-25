@@ -251,6 +251,40 @@ const MultiCheckDropdown = ({
   );
 };
 
+interface DesgloseRow {
+  id: number;
+  nombre: string;
+  cantidadNueva: number;
+  cantidadAnterior: number;
+  tipo: string;
+  comentario: string;
+  usuario: string;
+  fecha: string;
+}
+
+let desgloseNextId = 1000;
+
+const buildDesgloseRows = (col: string, mes: string, año: string): DesgloseRow[] => {
+  const items = desgloseData[col];
+  if (!items) return [];
+  const mesIdx = parseInt(mesIndex[mes]);
+  return items.map((item, i) => {
+    const amount = parseInt(item.cantidad.replace(/[$,]/g, ""));
+    const anterior = amount + Math.floor(Math.random() * 5000) - 2500;
+    const day = String(Math.min((i + 1) * 5, 28)).padStart(2, "0");
+    return {
+      id: desgloseNextId++,
+      nombre: item.nombre,
+      cantidadNueva: amount,
+      cantidadAnterior: Math.abs(anterior),
+      tipo: item.tipo,
+      comentario: comentarios[i % comentarios.length],
+      usuario: nombresUsuarios[i % nombresUsuarios.length],
+      fecha: `${day}/${String(mesIdx).padStart(2, "0")}/${año}`,
+    };
+  });
+};
+
 // Detail view for "Ver archivo"
 const FileDetailView = ({
   doc,
@@ -260,8 +294,69 @@ const FileDetailView = ({
   onBack: () => void;
 }) => {
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
+  const [desgloseRows, setDesgloseRows] = useState<DesgloseRow[]>([]);
+  const [tableValues, setTableValues] = useState<string[]>([...mockRows[0]]);
+  const [editingRowId, setEditingRowId] = useState<number | null>(null);
 
-  const mesIdx = meses.indexOf(doc.mes) + 1;
+  const handleOpenDesglose = (col: string) => {
+    if (desgloseCol === col) {
+      setDesgloseCol(null);
+      return;
+    }
+    setDesgloseCol(col);
+    setDesgloseRows(buildDesgloseRows(col, doc.mes, doc.año));
+  };
+
+  const getColIndex = (col: string) => financeColumns.indexOf(col);
+
+  const updateParentValue = (col: string, delta: number) => {
+    const idx = getColIndex(col);
+    if (idx < 0) return;
+    setTableValues((prev) => {
+      const updated = [...prev];
+      const current = parseInt(updated[idx].replace(/[%$,]/g, "")) || 0;
+      updated[idx] = String(current + delta);
+      return updated;
+    });
+  };
+
+  const addRow = () => {
+    if (!desgloseCol) return;
+    const mesIdx = parseInt(mesIndex[doc.mes]);
+    const newRow: DesgloseRow = {
+      id: desgloseNextId++,
+      nombre: "Nombre aquí",
+      cantidadNueva: 0,
+      cantidadAnterior: 0,
+      tipo: "fijo",
+      comentario: "Comentario",
+      usuario: "Usuario",
+      fecha: `01/${String(mesIdx).padStart(2, "0")}/${doc.año}`,
+    };
+    setDesgloseRows((prev) => [...prev, newRow]);
+    setEditingRowId(newRow.id);
+  };
+
+  const deleteRow = (row: DesgloseRow) => {
+    if (!desgloseCol) return;
+    setDesgloseRows((prev) => prev.filter((r) => r.id !== row.id));
+    updateParentValue(desgloseCol, -row.cantidadNueva);
+  };
+
+  const updateRow = (id: number, field: keyof DesgloseRow, value: string | number) => {
+    setDesgloseRows((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r;
+        if (field === "cantidadNueva" && desgloseCol) {
+          const oldVal = r.cantidadNueva;
+          const newVal = typeof value === "number" ? value : parseInt(value) || 0;
+          updateParentValue(desgloseCol, newVal - oldVal);
+          return { ...r, cantidadNueva: newVal };
+        }
+        return { ...r, [field]: value };
+      })
+    );
+  };
 
   return (
     <div className="flex-1 p-8 overflow-auto">
@@ -304,73 +399,158 @@ const FileDetailView = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockRows.map((row, i) => (
-                <TableRow key={i}>
-                  {row.map((cell, j) => {
-                    const col = financeColumns[j];
-                    const isPct = isPercentColumn(col);
-                    const displayVal = isPct ? cell : `$${cell.replace('%', '')}`;
-                    return (
-                      <TableCell
-                        key={j}
-                        className={cn(
-                          "text-sm text-foreground",
-                          !isPct && "cursor-pointer hover:bg-secondary/50"
-                        )}
-                        onClick={() => { if (!isPct) setDesgloseCol(col); }}
-                      >
-                        {displayVal}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))}
+              <TableRow>
+                {tableValues.map((cell, j) => {
+                  const col = financeColumns[j];
+                  const isPct = isPercentColumn(col);
+                  const displayVal = isPct ? cell : `$${parseInt(cell.replace(/[%$,]/g, "") || "0").toLocaleString()}`;
+                  return (
+                    <TableCell
+                      key={j}
+                      className={cn(
+                        "text-sm text-foreground",
+                        !isPct && "cursor-pointer hover:bg-secondary/50",
+                        desgloseCol === col && "bg-secondary/50 font-semibold"
+                      )}
+                      onClick={() => { if (!isPct) handleOpenDesglose(col); }}
+                    >
+                      {displayVal}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
             </TableBody>
           </Table>
         </div>
       </div>
 
-      <Dialog open={!!desgloseCol} onOpenChange={(open) => { if (!open) setDesgloseCol(null); }}>
-        <DialogContent className="max-w-3xl [&>button]:hidden p-0 border-none bg-transparent shadow-none">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDesgloseCol(null)} />
-          <div className="relative bg-card rounded-2xl shadow-xl p-8 z-10">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">Desglose: {desgloseCol}</DialogTitle>
-            </DialogHeader>
-            <div className="bg-card rounded-lg border border-border overflow-hidden mt-4">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-secondary">
-                    <TableHead className="font-semibold text-foreground">Nombre de dato</TableHead>
-                    <TableHead className="font-semibold text-foreground">Cantidad del gasto</TableHead>
-                    <TableHead className="font-semibold text-foreground">Tipo</TableHead>
-                    <TableHead className="font-semibold text-foreground">Fecha de generación</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(desgloseCol && desgloseData[desgloseCol] ? desgloseData[desgloseCol] : []).map((row, i) => {
-                    const day = String(Math.min((i + 1) * 5, 28)).padStart(2, "0");
-                    const fecha = `${day}/${String(mesIdx).padStart(2, "0")}/${doc.año}`;
-                    return (
-                      <TableRow key={i}>
-                        <TableCell className="text-muted-foreground">{row.nombre}</TableCell>
-                        <TableCell className="text-foreground">{row.cantidad}</TableCell>
-                        <TableCell className="text-foreground capitalize">{row.tipo}</TableCell>
-                        <TableCell className="text-muted-foreground">{fecha}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="flex justify-end mt-4">
-              <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => setDesgloseCol(null)}>
-                Cerrar
-              </Button>
-            </div>
+      {desgloseCol && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-2xl font-bold text-foreground">Desglose: {desgloseCol}</h3>
+            <Button
+              className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-6"
+              onClick={addRow}
+            >
+              Agregar dato
+            </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary">
+                  <TableHead className="font-semibold text-foreground">Nombre de dato</TableHead>
+                  <TableHead className="font-semibold text-foreground">Cantidad nueva</TableHead>
+                  <TableHead className="font-semibold text-foreground">Cantidad anterior</TableHead>
+                  <TableHead className="font-semibold text-foreground">Tipo</TableHead>
+                  <TableHead className="font-semibold text-foreground">Comentario</TableHead>
+                  <TableHead className="font-semibold text-foreground">Usuario</TableHead>
+                  <TableHead className="font-semibold text-foreground">Fecha de último cambio</TableHead>
+                  <TableHead className="font-semibold text-foreground">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {desgloseRows.map((row) => {
+                  const isEditing = editingRowId === row.id;
+                  return (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        {isEditing ? (
+                          <input
+                            className="border border-input rounded px-2 py-1 text-sm bg-background w-full"
+                            value={row.nombre}
+                            onChange={(e) => updateRow(row.id, "nombre", e.target.value)}
+                          />
+                        ) : (
+                          <span className="text-muted-foreground text-sm">{row.nombre}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            className="border border-input rounded px-2 py-1 text-sm bg-background w-24"
+                            value={row.cantidadNueva}
+                            onChange={(e) => updateRow(row.id, "cantidadNueva", parseInt(e.target.value) || 0)}
+                          />
+                        ) : (
+                          <span className="text-foreground text-sm">${row.cantidadNueva.toLocaleString()}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-foreground text-sm">
+                        ${row.cantidadAnterior.toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <select
+                            className="border border-input rounded px-2 py-1 text-sm bg-background"
+                            value={row.tipo}
+                            onChange={(e) => updateRow(row.id, "tipo", e.target.value)}
+                          >
+                            <option value="fijo">Fijo</option>
+                            <option value="operativo">Operativo</option>
+                            <option value="extraordinario">Extraordinario</option>
+                          </select>
+                        ) : (
+                          <span className="text-foreground text-sm capitalize">{row.tipo}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {isEditing ? (
+                          <input
+                            className="border border-input rounded px-2 py-1 text-sm bg-background w-full"
+                            value={row.comentario}
+                            onChange={(e) => updateRow(row.id, "comentario", e.target.value)}
+                          />
+                        ) : (
+                          <span className="text-muted-foreground text-sm">{row.comentario.slice(0, 25)}...</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-foreground text-sm">{row.usuario}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{row.fecha}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="p-1.5 rounded hover:bg-accent text-orange-500"
+                            title={isEditing ? "Guardar" : "Editar"}
+                            onClick={() => setEditingRowId(isEditing ? null : row.id)}
+                          >
+                            <Copy className="w-5 h-5" />
+                          </button>
+                          <button
+                            className="p-1.5 rounded hover:bg-destructive/10 text-destructive"
+                            title="Borrar"
+                            onClick={() => deleteRow(row)}
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="flex justify-end gap-4 mt-4">
+            <Button
+              variant="outline"
+              className="rounded-full border-destructive text-destructive hover:bg-destructive/10 px-6"
+              onClick={() => setDesgloseCol(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="rounded-full bg-sidebar hover:bg-sidebar/90 text-sidebar-foreground px-6"
+              onClick={() => setDesgloseCol(null)}
+            >
+              Guardar
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
