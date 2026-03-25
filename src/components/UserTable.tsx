@@ -92,7 +92,7 @@ const UserTable = () => {
 
   return (
     <div className="flex-1 p-8">
-      <h1 className="text-3xl font-bold text-foreground mb-1">Gestión de usuarios</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: '"Myanmar MN", sans-serif' }}>Gestión de usuarios</h1>
       <p className="text-muted-foreground mb-6">
         Consulta tus documentos, actualiza, edita o borra datos.
       </p>
