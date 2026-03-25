@@ -158,18 +158,22 @@ const DashboardPage = () => {
               <SelectTrigger className="w-[160px] bg-card border-border text-sm">
                 <SelectValue />
               </SelectTrigger>
-            <SelectContent>
-              {localizaciones.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={selectedPeriodo} onValueChange={setSelectedPeriodo}>
-            <SelectTrigger className="w-[170px] bg-card border-border text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {periodos.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-            </SelectContent>
-          </Select>
+              <SelectContent>
+                {localizaciones.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground font-medium">Periodo</span>
+            <Select value={selectedPeriodo} onValueChange={setSelectedPeriodo}>
+              <SelectTrigger className="w-[170px] bg-card border-border text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {periodos.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
