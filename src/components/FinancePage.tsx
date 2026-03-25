@@ -302,11 +302,23 @@ const FinancePage = () => {
                     <TableBody>
                       {mockRows.map((row, i) => (
                         <TableRow key={i}>
-                          {row.map((cell, j) => (
-                            <TableCell key={j} className="text-sm text-foreground">
-                              {cell}
-                            </TableCell>
-                          ))}
+                          {row.map((cell, j) => {
+                            const col = financeColumns[j];
+                            const isPct = isPercentColumn(col);
+                            const displayVal = isPct ? cell : `$${cell.replace('%', '')}`;
+                            return (
+                              <TableCell
+                                key={j}
+                                className={cn(
+                                  "text-sm text-foreground",
+                                  !isPct && "cursor-pointer hover:bg-secondary/50"
+                                )}
+                                onClick={() => { if (!isPct) setDesgloseCol(col); }}
+                              >
+                                {displayVal}
+                              </TableCell>
+                            );
+                          })}
                         </TableRow>
                       ))}
                     </TableBody>
