@@ -26,31 +26,12 @@ import {
 import { useCadenas, useSucursales, useFinanzas, useDesgloses, usePublicarFinanza } from "@/hooks/useApiData";
 import type { Sucursal, RegistroFinanciero } from "@/types/api.types";
 
-interface BranchCard {
-  id: number;
-  cadena: string;
-  localizacion: string;
-  estatus: string;
-}
-
-const mockBranches: BranchCard[] = [
-  { id: 1, cadena: "Corazón de Alcachofa", localizacion: "Andares", estatus: "Activo" },
-  { id: 2, cadena: "Kokoro", localizacion: "Andares", estatus: "Activo" },
-  { id: 3, cadena: "Oasis", localizacion: "Andares", estatus: "Activo" },
-  { id: 4, cadena: "Corazón de Alcachofa", localizacion: "Andares", estatus: "Activo" },
-  { id: 5, cadena: "Kokoro", localizacion: "Andares", estatus: "Activo" },
-  { id: 6, cadena: "Corazón de Alcachofa", localizacion: "Andares", estatus: "Activo" },
-  { id: 7, cadena: "Kokoro", localizacion: "Andares", estatus: "Activo" },
-  { id: 8, cadena: "Oasis", localizacion: "Andares", estatus: "Activo" },
-  { id: 9, cadena: "Corazón de Alcachofa", localizacion: "Andares", estatus: "Activo" },
-  { id: 10, cadena: "Kokoro", localizacion: "Andares", estatus: "Activo" },
-];
-
-const cadenas = ["Corazón de Alcachofa", "Kokoro", "Oasis"];
-const localizaciones = ["Andares", "Punto Sao Paulo", "Centro"];
-
 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const años = ["2024", "2025", "2026"];
+const mesNameToNum: Record<string, number> = {
+  Enero: 1, Febrero: 2, Marzo: 3, Abril: 4, Mayo: 5, Junio: 6,
+  Julio: 7, Agosto: 8, Septiembre: 9, Octubre: 10, Noviembre: 11, Diciembre: 12,
+};
 
 const financeColumns = [
   "Ventas brutas", "Inventario inicial", "Compra", "Inventario final",
