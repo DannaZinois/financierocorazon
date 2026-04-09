@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Filter, ArrowRight, ChevronDown } from "lucide-react";
+import { Filter, ArrowRight, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useCadenas, useSucursales, useFinanzas, useDesgloses, usePublicarFinanza } from "@/hooks/useApiData";
+import type { Sucursal, RegistroFinanciero } from "@/types/api.types";
 
 interface BranchCard {
   id: number;
