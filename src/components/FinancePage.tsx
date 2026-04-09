@@ -41,59 +41,11 @@ const financeColumns = [
 
 const isPercentColumn = (col: string) => col.startsWith("%") || col.includes("% ");
 
-const mockRows = [
-  ["150000", "32000", "45000", "28000", "30%", "12000", "138000", "89000", "64%", "49000", "35%"],
+const registroToRow = (r: RegistroFinanciero): string[] => [
+  String(r.ventas_brutas), String(r.inventario_inicial), String(r.compra), String(r.inventario_final),
+  `${r.pct_comp_venta}%`, String(r.dev_desc_vta), String(r.venta_neta), String(r.costo_venta),
+  `${r.pct_costo}%`, String(r.utilidad_bruta), `${r.pct_utilidad}%`,
 ];
-
-const desgloseData: Record<string, { nombre: string; cantidad: string; tipo: string; fecha: string }[]> = {
-  "Ventas brutas": [
-    { nombre: "Venta en comedor", cantidad: "$85000", tipo: "fijo", fecha: "" },
-    { nombre: "Venta para llevar", cantidad: "$35000", tipo: "operativo", fecha: "" },
-    { nombre: "Venta por delivery", cantidad: "$20000", tipo: "operativo", fecha: "" },
-    { nombre: "Eventos privados", cantidad: "$10000", tipo: "extraordinario", fecha: "" },
-  ],
-  "Inventario inicial": [
-    { nombre: "Proteínas y carnes", cantidad: "$12000", tipo: "fijo", fecha: "" },
-    { nombre: "Frutas y verduras", cantidad: "$8000", tipo: "operativo", fecha: "" },
-    { nombre: "Lácteos y huevos", cantidad: "$5000", tipo: "fijo", fecha: "" },
-    { nombre: "Bebidas y licores", cantidad: "$7000", tipo: "fijo", fecha: "" },
-  ],
-  "Compra": [
-    { nombre: "Compra de mariscos", cantidad: "$15000", tipo: "operativo", fecha: "" },
-    { nombre: "Compra de vegetales", cantidad: "$10000", tipo: "operativo", fecha: "" },
-    { nombre: "Insumos de cocina", cantidad: "$8000", tipo: "fijo", fecha: "" },
-    { nombre: "Bebidas alcohólicas", cantidad: "$7000", tipo: "operativo", fecha: "" },
-    { nombre: "Productos de limpieza", cantidad: "$5000", tipo: "fijo", fecha: "" },
-  ],
-  "Inventario final": [
-    { nombre: "Proteínas restantes", cantidad: "$10000", tipo: "fijo", fecha: "" },
-    { nombre: "Verduras en almacén", cantidad: "$6000", tipo: "operativo", fecha: "" },
-    { nombre: "Lácteos en cámara fría", cantidad: "$5000", tipo: "fijo", fecha: "" },
-    { nombre: "Licores en barra", cantidad: "$7000", tipo: "fijo", fecha: "" },
-  ],
-  "Dev Desc a VTA": [
-    { nombre: "Descuento por temporada", cantidad: "$5000", tipo: "extraordinario", fecha: "" },
-    { nombre: "Devolución de platillos", cantidad: "$3000", tipo: "operativo", fecha: "" },
-    { nombre: "Cortesías a clientes", cantidad: "$4000", tipo: "extraordinario", fecha: "" },
-  ],
-  "Venta Neta": [
-    { nombre: "Ingreso neto comedor", cantidad: "$78000", tipo: "fijo", fecha: "" },
-    { nombre: "Ingreso neto delivery", cantidad: "$32000", tipo: "operativo", fecha: "" },
-    { nombre: "Ingreso neto eventos", cantidad: "$28000", tipo: "extraordinario", fecha: "" },
-  ],
-  "Costo venta": [
-    { nombre: "Costo de alimentos", cantidad: "$45000", tipo: "fijo", fecha: "" },
-    { nombre: "Costo de bebidas", cantidad: "$18000", tipo: "operativo", fecha: "" },
-    { nombre: "Merma y desperdicio", cantidad: "$12000", tipo: "operativo", fecha: "" },
-    { nombre: "Empaque para llevar", cantidad: "$8000", tipo: "fijo", fecha: "" },
-    { nombre: "Gas y energéticos", cantidad: "$6000", tipo: "fijo", fecha: "" },
-  ],
-  "Utilidad bruta": [
-    { nombre: "Margen de alimentos", cantidad: "$30000", tipo: "fijo", fecha: "" },
-    { nombre: "Margen de bebidas", cantidad: "$12000", tipo: "operativo", fecha: "" },
-    { nombre: "Margen de eventos", cantidad: "$7000", tipo: "extraordinario", fecha: "" },
-  ],
-};
 
 const MultiCheckDropdown = ({
   label,
@@ -280,98 +232,16 @@ const FinancePage = () => {
       </div>
 
       {selectedBranch && (
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-foreground mb-4">
-            {selectedBranch.cadena}: {selectedBranch.localizacion}
-          </h2>
-
-          <div className="flex items-end gap-4 mb-6">
-            <MultiCheckDropdown
-              label="Meses"
-              labelClass="text-primary"
-              options={meses}
-              selected={selectedMeses}
-              onChange={setSelectedMeses}
-            />
-            <MultiCheckDropdown
-              label="Años"
-              labelClass="text-foreground"
-              options={años}
-              selected={selectedAños}
-              onChange={setSelectedAños}
-            />
-            <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={() => setShowPdfDialog(true)}>
-              Exportar a pdf
-            </Button>
-          </div>
-
-          {(() => {
-            // Build sorted year-month combos: most recent year first, months in calendar order
-            const sortedAños = [...selectedAños].sort((a, b) => Number(b) - Number(a));
-            const orderedMeses = selectedMeses.sort(
-              (a, b) => meses.indexOf(a) - meses.indexOf(b)
-            );
-            const combos: { mes: string; año: string }[] = [];
-            for (const año of sortedAños) {
-              for (const mes of orderedMeses) {
-                combos.push({ mes, año });
-              }
-            }
-            // If no selection, show a placeholder
-            if (combos.length === 0) {
-              return (
-                <p className="text-muted-foreground text-sm italic">
-                  Selecciona al menos un mes y un año para ver los datos.
-                </p>
-              );
-            }
-            return combos.map(({ mes, año }) => (
-              <div key={`${mes}-${año}`} className="mb-8">
-                <h3 className="text-xl font-bold text-foreground mb-1">
-                  {mes} {año}
-                </h3>
-                <p className="text-sm text-foreground">Fecha de última actualización: 00/00/0000</p>
-                <p className="text-sm text-foreground">Editado por: Usuario Jane Doe</p>
-                <p className="text-sm text-foreground mb-4 flex items-center gap-1">
-                  Estatus: Borrador <span className="w-2.5 h-2.5 rounded-full bg-success inline-block" />
-                </p>
-
-                <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-secondary">
-                        {financeColumns.map((col) => (
-                          <TableHead key={col} className="font-semibold text-foreground text-xs whitespace-nowrap">
-                            {col}
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockRows.map((row, i) => (
-                        <TableRow key={i}>
-                          {row.map((cell, j) => {
-                            const col = financeColumns[j];
-                            const isPct = isPercentColumn(col);
-                            const displayVal = isPct ? cell : `$${cell.replace('%', '')}`;
-                            return (
-                              <TableCell
-                                key={j}
-                                className={cn(
-                                  "text-sm text-foreground",
-                                  !isPct && "cursor-pointer hover:bg-secondary/50"
-                                )}
-                                onClick={() => { if (!isPct) { setDesgloseCol(col); setDesglosePeriod({ mes, año }); } }}
-                              >
-                                {displayVal}
-                              </TableCell>
-                            );
-                          })}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+        <FinanceDetail
+          branch={selectedBranch}
+          selectedMeses={selectedMeses}
+          setSelectedMeses={setSelectedMeses}
+          selectedAños={selectedAños}
+          setSelectedAños={setSelectedAños}
+          onExportPdf={() => setShowPdfDialog(true)}
+          onPublish={() => setShowPublishConfirm(true)}
+        />
+      )}
 
                 <div className="flex justify-end mt-4">
                   <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => setShowPublishConfirm(true)}>
