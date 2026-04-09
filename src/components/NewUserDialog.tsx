@@ -9,28 +9,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRoles } from "@/hooks/useApiData";
 
 interface NewUserDialogProps {
   open: boolean;
   onClose: () => void;
-  onAdd: (user: { name: string; email: string; password: string; role: string }) => void;
+  onAdd: (user: { name: string; email: string; password: string; role_ids: string[] }) => void;
 }
 
 const NewUserDialog = ({ open, onClose, onAdd }: NewUserDialogProps) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [roleId, setRoleId] = useState("");
+
+  const { data: rolesData } = useRoles();
+  const roles = Array.isArray(rolesData) ? rolesData : [];
 
   if (!open) return null;
 
   const handleSubmit = () => {
-    if (!name || !email || !password || !role) return;
-    onAdd({ name, email, password, role });
+    if (!name || !email || !password || !roleId) return;
+    onAdd({ name, email, password, role_ids: [roleId] });
     setName("");
     setEmail("");
     setPassword("");
-    setRole("");
+    setRoleId("");
     onClose();
   };
 
@@ -79,14 +83,14 @@ const NewUserDialog = ({ open, onClose, onAdd }: NewUserDialogProps) => {
           </div>
           <div>
             <label className="text-sm font-medium text-foreground mb-1 block">Tipo de rol*</label>
-            <Select value={role} onValueChange={setRole}>
+            <Select value={roleId} onValueChange={setRoleId}>
               <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Selecciona un rol" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Admin">Admin</SelectItem>
-                <SelectItem value="Tesorería">Tesorería</SelectItem>
-                <SelectItem value="Socio">Socio</SelectItem>
+                {roles.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

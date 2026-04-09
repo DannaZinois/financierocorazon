@@ -207,12 +207,12 @@ const UserTable = () => {
       <NewUserDialog
         open={newUserOpen}
         onClose={() => setNewUserOpen(false)}
-        onAdd={({ name, email, password, role }) => {
+        onAdd={({ name, email, password, role_ids }) => {
           createMutation.mutate({
             name,
             email,
             password,
-            role_ids: [], // Would need to resolve role name to ID
+            role_ids,
           });
         }}
       />

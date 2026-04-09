@@ -10,6 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCadenas, useSucursales } from "@/hooks/useApiData";
 
 interface Branch {
   id: number;
@@ -30,6 +38,12 @@ const BranchesDialog = ({ open, onClose, branches, onUpdate }: BranchesDialogPro
   const [editValues, setEditValues] = useState({ cadena: "", nombre: "" });
   const [newCadena, setNewCadena] = useState("");
   const [newLocation, setNewLocation] = useState("");
+
+  const { data: cadenasData } = useCadenas({ is_active: true });
+  const cadenasList = Array.isArray(cadenasData) ? cadenasData : [];
+
+  const { data: sucursalesData } = useSucursales({ cadena_id: newCadena || undefined, is_active: true });
+  const sucursalesList = Array.isArray(sucursalesData) ? sucursalesData : [];
 
   if (!open) return null;
 
@@ -53,8 +67,10 @@ const BranchesDialog = ({ open, onClose, branches, onUpdate }: BranchesDialogPro
 
   const handleAddBranch = () => {
     if (!newCadena || !newLocation) return;
+    const cadenaName = cadenasList.find((c) => c.id === newCadena)?.name || newCadena;
+    const sucursalName = sucursalesList.find((s) => s.id === newLocation)?.localizacion || newLocation;
     const newId = Math.max(0, ...branches.map((b) => b.id)) + 1;
-    onUpdate([...branches, { id: newId, cadena: newCadena, nombre: newLocation }]);
+    onUpdate([...branches, { id: newId, cadena: cadenaName, nombre: sucursalName }]);
     setNewCadena("");
     setNewLocation("");
     setShowAddDialog(false);
@@ -197,27 +213,29 @@ const BranchesDialog = ({ open, onClose, branches, onUpdate }: BranchesDialogPro
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Cadena*</label>
-              <select
-                value={newCadena}
-                onChange={(e) => setNewCadena(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="">Selecciona una cadena</option>
-                <option value="Corazón de Alcachofa">Corazón de Alcachofa</option>
-                <option value="Kokoro">Kokoro</option>
-              </select>
+              <Select value={newCadena} onValueChange={setNewCadena}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una cadena" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cadenasList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Localización*</label>
-              <select
-                value={newLocation}
-                onChange={(e) => setNewLocation(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="">Selecciona una localización</option>
-                <option value="Andares">Andares</option>
-                <option value="Punto Sao Paulo">Punto Sao Paulo</option>
-              </select>
+              <Select value={newLocation} onValueChange={setNewLocation}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una sucursal" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sucursalesList.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name} - {s.localizacion}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

@@ -24,9 +24,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCadenas, useSucursales, useFinanzas } from "@/hooks/useApiData";
+import type { Sucursal, Cadena, RegistroFinanciero } from "@/types/api.types";
 
-const cadenas = ["Corazón de Alcachofa", "Kokoro", "Oasis"];
-const localizaciones = ["Andares", "Punto Sao Paulo", "Centro"];
 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const años = ["2024", "2025", "2026"];
 
@@ -35,6 +35,7 @@ const mesIndex: Record<string, string> = {
   Mayo: "05", Junio: "06", Julio: "07", Agosto: "08",
   Septiembre: "09", Octubre: "10", Noviembre: "11", Diciembre: "12",
 };
+const mesNumToName: Record<number, string> = { 1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre" };
 
 interface DocRow {
   id: number;
@@ -46,6 +47,7 @@ interface DocRow {
   usuario: string;
   cambios: number;
   copyLabel?: string;
+  registroId?: string;
 }
 
 const generarFecha = (mes: string, año: string, dia: number) =>
@@ -290,10 +292,14 @@ const FileDetailView = ({
   doc,
   onBack,
   allDocs,
+  cadenaNames,
+  localizacionNames,
 }: {
   doc: DocRow;
   onBack: (addedCount: number) => void;
   allDocs: DocRow[];
+  cadenaNames: string[];
+  localizacionNames: string[];
 }) => {
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
@@ -333,9 +339,9 @@ const FileDetailView = ({
     setDuplicateMsg("");
     setFilterError(false);
 
-    // Determine which cadenas, locs, meses, años to search
-    const searchCadenas = fCadena && fCadena !== "__all__" ? [fCadena] : cadenas;
-    const searchLocs = fLoc && fLoc !== "__all__" ? [fLoc] : localizaciones;
+    // Determine which cadenaNames, locs, meses, años to search
+    const searchCadenas = fCadena && fCadena !== "__all__" ? [fCadena] : cadenaNames;
+    const searchLocs = fLoc && fLoc !== "__all__" ? [fLoc] : localizacionNames;
     const searchMeses = fMeses.length > 0 ? fMeses : [];
     const searchAños = fAños.length > 0 ? fAños : [];
 
@@ -614,7 +620,7 @@ const FileDetailView = ({
               <SelectTrigger className={cn("w-full", filterError && "border-red-500")}><SelectValue placeholder="Selecciona" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
-                {cadenas.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {cadenaNames.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -624,7 +630,7 @@ const FileDetailView = ({
               <SelectTrigger className={cn("w-full", filterError && "border-red-500")}><SelectValue placeholder="Selecciona" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
-                {localizaciones.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                {localizacionNames.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -755,6 +761,11 @@ const FinanceDupPage = () => {
   const [expandedComentario, setExpandedComentario] = useState<number | null>(null);
   const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([...baseMockDocs]);
   const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
+
+  const { data: cadenasData } = useCadenas({ is_active: true });
+  const { data: sucursalesData } = useSucursales({ is_active: true });
+  const cadenaNames = (Array.isArray(cadenasData) ? cadenasData : []).map((c: Cadena) => c.name);
+  const localizacionNames = [...new Set((Array.isArray(sucursalesData) ? sucursalesData : []).map((s: Sucursal) => s.localizacion))];
   const [viewingDoc, setViewingDoc] = useState<DocRow | null>(null);
   const [mainDuplicateMsg, setMainDuplicateMsg] = useState<string>("");
   const [mainFilterError, setMainFilterError] = useState(false);
@@ -835,6 +846,8 @@ const FinanceDupPage = () => {
       <FileDetailView
         doc={viewingDoc}
         allDocs={existenteDocs}
+        cadenaNames={cadenaNames}
+        localizacionNames={localizacionNames}
         onBack={(addedCount: number) => {
           if (addedCount > 0) {
             setExistenteDocs((prev) =>
@@ -879,7 +892,7 @@ const FinanceDupPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
-                {cadenas.map((c) => (
+                {cadenaNames.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
               </SelectContent>
@@ -895,7 +908,7 @@ const FinanceDupPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
-                {localizaciones.map((l) => (
+                {localizacionNames.map((l) => (
                   <SelectItem key={l} value={l}>{l}</SelectItem>
                 ))}
               </SelectContent>
