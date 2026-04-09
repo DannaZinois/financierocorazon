@@ -292,10 +292,14 @@ const FileDetailView = ({
   doc,
   onBack,
   allDocs,
+  cadenaNames,
+  localizacionNames,
 }: {
   doc: DocRow;
   onBack: (addedCount: number) => void;
   allDocs: DocRow[];
+  cadenaNames: string[];
+  localizacionNames: string[];
 }) => {
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
@@ -842,6 +846,8 @@ const FinanceDupPage = () => {
       <FileDetailView
         doc={viewingDoc}
         allDocs={existenteDocs}
+        cadenaNames={cadenaNames}
+        localizacionNames={localizacionNames}
         onBack={(addedCount: number) => {
           if (addedCount > 0) {
             setExistenteDocs((prev) =>
