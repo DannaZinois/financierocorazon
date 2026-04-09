@@ -156,6 +156,13 @@ const MultiCheckDropdown = ({
   );
 };
 
+interface BranchCard {
+  id: string;
+  cadena: string;
+  localizacion: string;
+  estatus: string;
+}
+
 const FinancePage = () => {
   const [cadenaFilter, setCadenaFilter] = useState<string>("");
   const [locFilter, setLocFilter] = useState<string>("");
@@ -167,7 +174,20 @@ const FinancePage = () => {
   const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
 
-  const filtered = mockBranches.filter((b) => {
+  const { data: sucursalesData } = useSucursales({ is_active: true });
+  const sucursales: Sucursal[] = Array.isArray(sucursalesData) ? sucursalesData : [];
+
+  const branches: BranchCard[] = sucursales.map((s) => ({
+    id: s.id,
+    cadena: s.cadena_name,
+    localizacion: s.localizacion,
+    estatus: s.is_active ? "Activo" : "Inactivo",
+  }));
+
+  const cadenas = [...new Set(branches.map((b) => b.cadena))];
+  const localizaciones = [...new Set(branches.map((b) => b.localizacion))];
+
+  const filtered = branches.filter((b) => {
     if (cadenaFilter && cadenaFilter !== "__all__" && b.cadena !== cadenaFilter) return false;
     if (locFilter && locFilter !== "__all__" && b.localizacion !== locFilter) return false;
     return true;
