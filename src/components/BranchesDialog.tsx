@@ -10,6 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCadenas, useSucursales } from "@/hooks/useApiData";
 
 interface Branch {
   id: number;
@@ -30,6 +38,12 @@ const BranchesDialog = ({ open, onClose, branches, onUpdate }: BranchesDialogPro
   const [editValues, setEditValues] = useState({ cadena: "", nombre: "" });
   const [newCadena, setNewCadena] = useState("");
   const [newLocation, setNewLocation] = useState("");
+
+  const { data: cadenasData } = useCadenas({ is_active: true });
+  const cadenasList = Array.isArray(cadenasData) ? cadenasData : [];
+
+  const { data: sucursalesData } = useSucursales({ cadena_id: newCadena || undefined, is_active: true });
+  const sucursalesList = Array.isArray(sucursalesData) ? sucursalesData : [];
 
   if (!open) return null;
 
@@ -53,8 +67,10 @@ const BranchesDialog = ({ open, onClose, branches, onUpdate }: BranchesDialogPro
 
   const handleAddBranch = () => {
     if (!newCadena || !newLocation) return;
+    const cadenaName = cadenasList.find((c) => c.id === newCadena)?.name || newCadena;
+    const sucursalName = sucursalesList.find((s) => s.id === newLocation)?.localizacion || newLocation;
     const newId = Math.max(0, ...branches.map((b) => b.id)) + 1;
-    onUpdate([...branches, { id: newId, cadena: newCadena, nombre: newLocation }]);
+    onUpdate([...branches, { id: newId, cadena: cadenaName, nombre: sucursalName }]);
     setNewCadena("");
     setNewLocation("");
     setShowAddDialog(false);

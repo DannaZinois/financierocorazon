@@ -24,9 +24,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCadenas, useSucursales, useFinanzas } from "@/hooks/useApiData";
+import type { Sucursal, Cadena, RegistroFinanciero } from "@/types/api.types";
 
-const cadenas = ["Corazón de Alcachofa", "Kokoro", "Oasis"];
-const localizaciones = ["Andares", "Punto Sao Paulo", "Centro"];
 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const años = ["2024", "2025", "2026"];
 
@@ -35,9 +35,10 @@ const mesIndex: Record<string, string> = {
   Mayo: "05", Junio: "06", Julio: "07", Agosto: "08",
   Septiembre: "09", Octubre: "10", Noviembre: "11", Diciembre: "12",
 };
+const mesNumToName: Record<number, string> = { 1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre" };
 
 interface DocRow {
-  id: number;
+  id: string;
   cadena: string;
   localizacion: string;
   mes: string;
@@ -46,6 +47,7 @@ interface DocRow {
   usuario: string;
   cambios: number;
   copyLabel?: string;
+  registroId?: string;
 }
 
 const generarFecha = (mes: string, año: string, dia: number) =>
