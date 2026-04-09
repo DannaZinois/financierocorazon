@@ -762,7 +762,6 @@ const FinanceDupPage = () => {
   const { data: sucursalesData } = useSucursales({ is_active: true });
   const cadenaNames = (Array.isArray(cadenasData) ? cadenasData : []).map((c: Cadena) => c.name);
   const localizacionNames = [...new Set((Array.isArray(sucursalesData) ? sucursalesData : []).map((s: Sucursal) => s.localizacion))];
-  const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
   const [viewingDoc, setViewingDoc] = useState<DocRow | null>(null);
   const [mainDuplicateMsg, setMainDuplicateMsg] = useState<string>("");
   const [mainFilterError, setMainFilterError] = useState(false);
