@@ -24,14 +24,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCadenas, useSucursales, useFinanzas, useDesgloses, usePublicarFinanza } from "@/hooks/useApiData";
-import type { Sucursal, RegistroFinanciero } from "@/types/api.types";
+import { finanzasService } from "@/services/finanzas.service";
+import type { Sucursal, RegistroFinanciero, DesgloseLinea } from "@/types/api.types";
 
-const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-const años = ["2024", "2025", "2026"];
+const mesesList = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const añosList = ["2024", "2025", "2026"];
 const mesNameToNum: Record<string, number> = {
   Enero: 1, Febrero: 2, Marzo: 3, Abril: 4, Mayo: 5, Junio: 6,
   Julio: 7, Agosto: 8, Septiembre: 9, Octubre: 10, Noviembre: 11, Diciembre: 12,
 };
+const mesNumToName = Object.fromEntries(Object.entries(mesNameToNum).map(([k, v]) => [v, k]));
 
 const financeColumns = [
   "Ventas brutas", "Inventario inicial", "Compra", "Inventario final",
@@ -39,12 +41,23 @@ const financeColumns = [
   "% Costo", "Utilidad bruta", "% utilidad",
 ];
 
+const colToCategoria: Record<string, string> = {
+  "Ventas brutas": "ventas_brutas",
+  "Inventario inicial": "inventario_inicial",
+  "Compra": "compra",
+  "Inventario final": "inventario_final",
+  "Dev Desc a VTA": "dev_desc_vta",
+  "Venta Neta": "venta_neta",
+  "Costo venta": "costo_venta",
+  "Utilidad bruta": "utilidad_bruta",
+};
+
 const isPercentColumn = (col: string) => col.startsWith("%") || col.includes("% ");
 
 const registroToRow = (r: RegistroFinanciero): string[] => [
   String(r.ventas_brutas), String(r.inventario_inicial), String(r.compra), String(r.inventario_final),
-  `${r.pct_comp_venta}%`, String(r.dev_desc_vta), String(r.venta_neta), String(r.costo_venta),
-  `${r.pct_costo}%`, String(r.utilidad_bruta), `${r.pct_utilidad}%`,
+  `${r.pct_comp_venta.toFixed(1)}%`, String(r.dev_desc_vta), String(r.venta_neta), String(r.costo_venta),
+  `${r.pct_costo.toFixed(1)}%`, String(r.utilidad_bruta), `${r.pct_utilidad.toFixed(1)}%`,
 ];
 
 const MultiCheckDropdown = ({
@@ -122,9 +135,10 @@ const FinancePage = () => {
   const [selectedMeses, setSelectedMeses] = useState<string[]>([]);
   const [selectedAños, setSelectedAños] = useState<string[]>([]);
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
-  const [desglosePeriod, setDesglosePeriod] = useState<{ mes: string; año: string } | null>(null);
+  const [desgloseRegistroId, setDesgloseRegistroId] = useState<string | null>(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const { data: sucursalesData } = useSucursales({ is_active: true });
   const sucursales: Sucursal[] = Array.isArray(sucursalesData) ? sucursalesData : [];
@@ -144,6 +158,63 @@ const FinancePage = () => {
     if (locFilter && locFilter !== "__all__" && b.localizacion !== locFilter) return false;
     return true;
   });
+
+  // Fetch financial records for selected branch
+  const { data: finanzasData, isLoading: finanzasLoading } = useFinanzas(
+    selectedBranch ? { sucursal_id: selectedBranch.id } : undefined
+  );
+  const registros: RegistroFinanciero[] = Array.isArray(finanzasData) ? finanzasData : [];
+
+  // Fetch desgloses for the active breakdown
+  const desgloseCategoria = desgloseCol ? colToCategoria[desgloseCol] : undefined;
+  const { data: desglosesData } = useDesgloses(
+    desgloseRegistroId ? { registro_financiero_id: desgloseRegistroId, categoria: desgloseCategoria } : undefined
+  );
+  const desgloseLines: DesgloseLinea[] = Array.isArray(desglosesData) ? desglosesData : [];
+
+  const publicarMutation = usePublicarFinanza();
+
+  const handlePublish = () => {
+    if (publishingId) {
+      publicarMutation.mutate(publishingId, {
+        onSuccess: () => setShowPublishConfirm(false),
+      });
+    }
+  };
+
+  const handleExportPdf = async (registroId: string) => {
+    try {
+      const blob = await finanzasService.exportPdf(registroId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `financiero_${registroId}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setShowPdfDialog(false);
+    } catch {
+      setShowPdfDialog(false);
+    }
+  };
+
+  // Build combos from selected months/years
+  const sortedAños = [...selectedAños].sort((a, b) => Number(b) - Number(a));
+  const orderedMeses = [...selectedMeses].sort(
+    (a, b) => mesesList.indexOf(a) - mesesList.indexOf(b)
+  );
+  const combos: { mes: string; año: string }[] = [];
+  for (const año of sortedAños) {
+    for (const mes of orderedMeses) {
+      combos.push({ mes, año });
+    }
+  }
+
+  // Find matching registro for a given mes/año
+  const findRegistro = (mes: string, año: string): RegistroFinanciero | undefined => {
+    const mesNum = mesNameToNum[mes];
+    const añoNum = parseInt(año);
+    return registros.find((r) => r.mes === mesNum && r.año === añoNum);
+  };
 
   return (
     <div className="flex-1 p-8 overflow-auto">
@@ -232,31 +303,123 @@ const FinancePage = () => {
       </div>
 
       {selectedBranch && (
-        <FinanceDetail
-          branch={selectedBranch}
-          selectedMeses={selectedMeses}
-          setSelectedMeses={setSelectedMeses}
-          selectedAños={selectedAños}
-          setSelectedAños={setSelectedAños}
-          onExportPdf={() => setShowPdfDialog(true)}
-          onPublish={() => setShowPublishConfirm(true)}
-        />
-      )}
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
+            {selectedBranch.cadena}: {selectedBranch.localizacion}
+          </h2>
+
+          <div className="flex items-end gap-4 mb-6">
+            <MultiCheckDropdown
+              label="Meses"
+              labelClass="text-primary"
+              options={mesesList}
+              selected={selectedMeses}
+              onChange={setSelectedMeses}
+            />
+            <MultiCheckDropdown
+              label="Años"
+              labelClass="text-foreground"
+              options={añosList}
+              selected={selectedAños}
+              onChange={setSelectedAños}
+            />
+            <Button className="rounded-full bg-purple-600 hover:bg-purple-700 text-white px-6" onClick={() => setShowPdfDialog(true)}>
+              Exportar a pdf
+            </Button>
+          </div>
+
+          {finanzasLoading && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          )}
+
+          {combos.length === 0 && !finanzasLoading && (
+            <p className="text-muted-foreground text-sm italic">
+              Selecciona al menos un mes y un año para ver los datos.
+            </p>
+          )}
+
+          {combos.map(({ mes, año }) => {
+            const registro = findRegistro(mes, año);
+            if (!registro) {
+              return (
+                <div key={`${mes}-${año}`} className="mb-8">
+                  <h3 className="text-xl font-bold text-foreground mb-1">{mes} {año}</h3>
+                  <p className="text-sm text-muted-foreground italic">No hay registro financiero para este periodo.</p>
+                </div>
+              );
+            }
+            const row = registroToRow(registro);
+            return (
+              <div key={`${mes}-${año}`} className="mb-8">
+                <h3 className="text-xl font-bold text-foreground mb-1">{mes} {año}</h3>
+                <p className="text-sm text-foreground">Fecha de última actualización: {registro.fecha_ultima_edicion ?? "—"}</p>
+                <p className="text-sm text-foreground">Editado por: {registro.editado_por_nombre ?? "—"}</p>
+                <p className="text-sm text-foreground mb-4 flex items-center gap-1">
+                  Estatus: {registro.estatus === "publicado" ? "Publicado" : "Borrador"}
+                  <span className={cn("w-2.5 h-2.5 rounded-full inline-block", registro.estatus === "publicado" ? "bg-primary" : "bg-yellow-500")} />
+                </p>
+
+                <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-secondary">
+                        {financeColumns.map((col) => (
+                          <TableHead key={col} className="font-semibold text-foreground text-xs whitespace-nowrap">
+                            {col}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        {row.map((cell, j) => {
+                          const col = financeColumns[j];
+                          const isPct = isPercentColumn(col);
+                          const displayVal = isPct ? cell : `$${parseInt(cell.replace(/[%]/g, "") || "0").toLocaleString()}`;
+                          return (
+                            <TableCell
+                              key={j}
+                              className={cn(
+                                "text-sm text-foreground",
+                                !isPct && "cursor-pointer hover:bg-secondary/50"
+                              )}
+                              onClick={() => {
+                                if (!isPct) {
+                                  setDesgloseCol(col);
+                                  setDesgloseRegistroId(registro.id);
+                                }
+                              }}
+                            >
+                              {displayVal}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
 
                 <div className="flex justify-end mt-4">
-                  <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => setShowPublishConfirm(true)}>
-                    Publicar
+                  <Button
+                    className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8"
+                    onClick={() => { setPublishingId(registro.id); setShowPublishConfirm(true); }}
+                    disabled={registro.estatus === "publicado"}
+                  >
+                    {registro.estatus === "publicado" ? "Publicado" : "Publicar"}
                   </Button>
                 </div>
               </div>
-            ));
-          })()}
+            );
+          })}
         </div>
       )}
 
-      <Dialog open={!!desgloseCol} onOpenChange={(open) => { if (!open) { setDesgloseCol(null); setDesglosePeriod(null); } }}>
+      {/* Desglose Dialog */}
+      <Dialog open={!!desgloseCol} onOpenChange={(open) => { if (!open) { setDesgloseCol(null); setDesgloseRegistroId(null); } }}>
         <DialogContent className="max-w-3xl [&>button]:hidden p-0 border-none bg-transparent shadow-none">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setDesgloseCol(null); setDesglosePeriod(null); }} />
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setDesgloseCol(null); setDesgloseRegistroId(null); }} />
           <div className="relative bg-card rounded-2xl shadow-xl p-8 z-10">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold">Desglose: {desgloseCol}</DialogTitle>
@@ -272,25 +435,26 @@ const FinancePage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(desgloseCol && desgloseData[desgloseCol] ? desgloseData[desgloseCol] : []).map((row, i) => {
-                    const mesIdx = desglosePeriod ? meses.indexOf(desglosePeriod.mes) + 1 : 1;
-                    const año = desglosePeriod?.año || "2025";
-                    const day = String(Math.min((i + 1) * 5, 28)).padStart(2, "0");
-                    const fecha = `${day}/${String(mesIdx).padStart(2, "0")}/${año}`;
-                    return (
-                      <TableRow key={i}>
-                        <TableCell className="text-muted-foreground">{row.nombre}</TableCell>
-                        <TableCell className="text-foreground">{row.cantidad}</TableCell>
-                        <TableCell className="text-foreground capitalize">{row.tipo}</TableCell>
-                        <TableCell className="text-muted-foreground">{fecha}</TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {desgloseLines.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground py-6">
+                        No hay desgloses para esta categoría.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {desgloseLines.map((line) => (
+                    <TableRow key={line.id}>
+                      <TableCell className="text-muted-foreground">{line.nombre}</TableCell>
+                      <TableCell className="text-foreground">${line.cantidad.toLocaleString()}</TableCell>
+                      <TableCell className="text-foreground capitalize">{line.tipo}</TableCell>
+                      <TableCell className="text-muted-foreground">{line.fecha_generacion ?? "—"}</TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
             <div className="flex justify-end mt-4">
-              <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => { setDesgloseCol(null); setDesglosePeriod(null); }}>
+              <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8" onClick={() => { setDesgloseCol(null); setDesgloseRegistroId(null); }}>
                 Cerrar
               </Button>
             </div>
@@ -298,6 +462,7 @@ const FinancePage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* PDF Export Dialog */}
       <Dialog open={showPdfDialog} onOpenChange={setShowPdfDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>Exportar a PDF</DialogTitle></DialogHeader>
@@ -307,22 +472,40 @@ const FinancePage = () => {
             </p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowPdfDialog(false)}>Cancelar</Button>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => { setShowPdfDialog(false); setShowPublishConfirm(true); }}>Descargar PDF</Button>
+              <Button
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                onClick={() => {
+                  const firstCombo = combos[0];
+                  if (firstCombo) {
+                    const reg = findRegistro(firstCombo.mes, firstCombo.año);
+                    if (reg) handleExportPdf(reg.id);
+                  }
+                }}
+              >
+                Descargar PDF
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Publish Confirmation Dialog */}
       <Dialog open={showPublishConfirm} onOpenChange={setShowPublishConfirm}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>Confirmar publicación</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              El archivo PDF de <strong>{selectedBranch?.cadena} - {selectedBranch?.localizacion}</strong> será publicado y estará disponible para su descarga. ¿Desea continuar?
+              El registro financiero de <strong>{selectedBranch?.cadena} - {selectedBranch?.localizacion}</strong> será publicado. Una vez publicado no podrá ser modificado. ¿Desea continuar?
             </p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowPublishConfirm(false)}>Cancelar</Button>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setShowPublishConfirm(false)}>Confirmar y publicar</Button>
+              <Button
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                onClick={handlePublish}
+                disabled={publicarMutation.isPending}
+              >
+                {publicarMutation.isPending ? "Publicando..." : "Confirmar y publicar"}
+              </Button>
             </div>
           </div>
         </DialogContent>
