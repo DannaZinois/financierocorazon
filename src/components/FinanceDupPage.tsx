@@ -335,9 +335,9 @@ const FileDetailView = ({
     setDuplicateMsg("");
     setFilterError(false);
 
-    // Determine which cadenas, locs, meses, años to search
-    const searchCadenas = fCadena && fCadena !== "__all__" ? [fCadena] : cadenas;
-    const searchLocs = fLoc && fLoc !== "__all__" ? [fLoc] : localizaciones;
+    // Determine which cadenaNames, locs, meses, años to search
+    const searchCadenas = fCadena && fCadena !== "__all__" ? [fCadena] : cadenaNames;
+    const searchLocs = fLoc && fLoc !== "__all__" ? [fLoc] : localizacionNames;
     const searchMeses = fMeses.length > 0 ? fMeses : [];
     const searchAños = fAños.length > 0 ? fAños : [];
 
@@ -616,7 +616,7 @@ const FileDetailView = ({
               <SelectTrigger className={cn("w-full", filterError && "border-red-500")}><SelectValue placeholder="Selecciona" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
-                {cadenas.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {cadenaNames.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -626,7 +626,7 @@ const FileDetailView = ({
               <SelectTrigger className={cn("w-full", filterError && "border-red-500")}><SelectValue placeholder="Selecciona" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
-                {localizaciones.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                {localizacionNames.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -886,7 +886,7 @@ const FinanceDupPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
-                {cadenas.map((c) => (
+                {cadenaNames.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
               </SelectContent>
@@ -902,7 +902,7 @@ const FinanceDupPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
-                {localizaciones.map((l) => (
+                {localizacionNames.map((l) => (
                   <SelectItem key={l} value={l}>{l}</SelectItem>
                 ))}
               </SelectContent>
