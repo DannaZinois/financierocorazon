@@ -38,7 +38,7 @@ const mesIndex: Record<string, string> = {
 const mesNumToName: Record<number, string> = { 1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre" };
 
 interface DocRow {
-  id: string;
+  id: number;
   cadena: string;
   localizacion: string;
   mes: string;
@@ -756,6 +756,12 @@ const FinanceDupPage = () => {
   const [expandedCambios, setExpandedCambios] = useState<number | null>(null);
   const [expandedComentario, setExpandedComentario] = useState<number | null>(null);
   const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([...baseMockDocs]);
+  const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
+
+  const { data: cadenasData } = useCadenas({ is_active: true });
+  const { data: sucursalesData } = useSucursales({ is_active: true });
+  const cadenaNames = (Array.isArray(cadenasData) ? cadenasData : []).map((c: Cadena) => c.name);
+  const localizacionNames = [...new Set((Array.isArray(sucursalesData) ? sucursalesData : []).map((s: Sucursal) => s.localizacion))];
   const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
   const [viewingDoc, setViewingDoc] = useState<DocRow | null>(null);
   const [mainDuplicateMsg, setMainDuplicateMsg] = useState<string>("");
