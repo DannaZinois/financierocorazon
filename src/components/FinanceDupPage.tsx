@@ -698,16 +698,31 @@ const FinanceDupPage = () => {
   const [mode, setMode] = useState<"existente" | "nuevo">("existente");
   const [expandedCambios, setExpandedCambios] = useState<number | null>(null);
   const [expandedComentario, setExpandedComentario] = useState<number | null>(null);
-  const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([...baseMockDocs]);
-  const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
 
   const { data: cadenasData } = useCadenas({ is_active: true });
   const { data: sucursalesData } = useSucursales({ is_active: true });
+  const { data: finanzasData } = useFinanzas();
   const cadenaNames = (Array.isArray(cadenasData) ? cadenasData : []).map((c: Cadena) => c.name);
   const localizacionNames = [...new Set((Array.isArray(sucursalesData) ? sucursalesData : []).map((s: Sucursal) => s.localizacion))];
+  const finanzasList: RegistroFinanciero[] = Array.isArray(finanzasData) ? finanzasData : [];
+
+  // Build the existente list from API; allow local manipulation (delete, duplicate)
+  const apiExistenteDocs = finanzasList.map((r, i) => registroToDocRow(r, i));
+  const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([]);
+  const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!hydrated && apiExistenteDocs.length > 0) {
+      setExistenteDocs(apiExistenteDocs);
+      setHydrated(true);
+    }
+  }, [apiExistenteDocs, hydrated]);
+
   const [viewingDoc, setViewingDoc] = useState<DocRow | null>(null);
   const [mainDuplicateMsg, setMainDuplicateMsg] = useState<string>("");
   const [mainFilterError, setMainFilterError] = useState(false);
+
 
   const getFilteredDocs = (docs: DocRow[]) =>
     docs.filter((doc) => {
