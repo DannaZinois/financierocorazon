@@ -24,8 +24,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCadenas, useSucursales, useFinanzas } from "@/hooks/useApiData";
-import type { Sucursal, Cadena, RegistroFinanciero } from "@/types/api.types";
+import { useCadenas, useSucursales, useFinanzas, useDesgloses } from "@/hooks/useApiData";
+import type { Sucursal, Cadena, RegistroFinanciero, DesgloseLinea } from "@/types/api.types";
 
 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const años = ["2024", "2025", "2026"];
@@ -53,83 +53,22 @@ interface DocRow {
 const generarFecha = (mes: string, año: string, dia: number) =>
   `${String(dia).padStart(2, "0")}/${mesIndex[mes]}/${año}`;
 
-const baseMockDocs: DocRow[] = [
-  { id: 1, cadena: "Corazón de Alcachofa", localizacion: "Andares", mes: "Enero", año: "2025", fecha: generarFecha("Enero", "2025", 15), usuario: "María García", cambios: 200 },
-  { id: 2, cadena: "Kokoro", localizacion: "Andares", mes: "Febrero", año: "2025", fecha: generarFecha("Febrero", "2025", 20), usuario: "Carlos López", cambios: 150 },
-  { id: 3, cadena: "Oasis", localizacion: "Centro", mes: "Marzo", año: "2025", fecha: generarFecha("Marzo", "2025", 10), usuario: "Ana Martínez", cambios: 180 },
-  { id: 4, cadena: "Corazón de Alcachofa", localizacion: "Punto Sao Paulo", mes: "Abril", año: "2025", fecha: generarFecha("Abril", "2025", 5), usuario: "Pedro Ruiz", cambios: 120 },
-  { id: 5, cadena: "Kokoro", localizacion: "Centro", mes: "Enero", año: "2024", fecha: generarFecha("Enero", "2024", 12), usuario: "Laura Sánchez", cambios: 90 },
-  { id: 6, cadena: "Oasis", localizacion: "Andares", mes: "Marzo", año: "2024", fecha: generarFecha("Marzo", "2024", 22), usuario: "Diego Torres", cambios: 210 },
-  { id: 7, cadena: "Corazón de Alcachofa", localizacion: "Centro", mes: "Febrero", año: "2026", fecha: generarFecha("Febrero", "2026", 8), usuario: "Sofía Hernández", cambios: 175 },
-  { id: 8, cadena: "Kokoro", localizacion: "Punto Sao Paulo", mes: "Enero", año: "2026", fecha: generarFecha("Enero", "2026", 3), usuario: "María García", cambios: 95 },
-];
-
-const kpiNames = [
-  "Ventas totales - Compra de mariscos",
-  "Costo de ventas - Insumos de cocina",
-  "Nómina - Sueldo de meseros",
-  "Ventas totales - Bebidas alcohólicas",
-  "Costo de ventas - Merma y desperdicio",
-  "Gastos operativos - Mantenimiento de equipo",
-  "Nómina - Sueldo de cocineros",
-  "Gastos operativos - Servicios de limpieza",
-  "Ventas totales - Platillos especiales",
-  "Costo de ventas - Productos cárnicos",
-  "Gastos operativos - Renta del local",
-  "Nómina - Propinas redistribuidas",
-  "Gastos operativos - Gas y electricidad",
-  "Costo de ventas - Verduras y frutas",
-  "Gastos operativos - Publicidad local",
-];
-
-const tipos = ["Fijo", "Extraordinario", "Operativo"];
-const nombresUsuarios = ["María García", "Carlos López", "Ana Martínez", "Pedro Ruiz", "Laura Sánchez", "Diego Torres", "Sofía Hernández", "Roberto Díaz", "Elena Flores", "Manuel Vega", "Gabriela Ríos", "Fernando Castro", "Patricia Morales", "Alejandro Reyes", "Isabel Navarro"];
-
-const comentarios = [
-  "Se ajustó el precio del proveedor de mariscos por cambio de temporada",
-  "Compra extraordinaria de insumos para evento especial del restaurante",
-  "Actualización del sueldo base de meseros según nuevo tabulador",
-  "Incremento en ventas de bebidas por promoción de fin de semana",
-  "Se registró merma mayor por producto caducado en almacén",
-  "Reparación urgente del horno principal de la cocina",
-  "Ajuste salarial de cocineros por evaluación de desempeño trimestral",
-  "Contratación de servicio de limpieza profunda mensual",
-  "Nuevos platillos añadidos al menú de temporada aumentaron ventas",
-  "Cambio de proveedor de cárnicos por mejor precio y calidad",
-  "Renovación del contrato de renta con aumento del tres por ciento",
-  "Redistribución de propinas conforme a la nueva política interna",
-  "Aumento en tarifa de gas natural afectó el costo operativo",
-  "Se negoció descuento con proveedor de verduras del mercado local",
-  "Campaña publicitaria en redes sociales para atraer nuevos clientes",
-];
-
-interface CambioRow {
-  kpi: string;
-  fechaActualizacion: string;
-  usuario: string;
-  datoAnterior: string;
-  datoNuevo: string;
-  tipo: string;
-  comentario: string;
-}
-
-const generarCambios = (mes: string, año: string): CambioRow[] => {
-  const mi = parseInt(mesIndex[mes]);
-  return kpiNames.map((kpi, i) => {
-    const dia = ((i * 2 + 3) % 28) + 1;
-    const anterior = Math.floor(Math.random() * 50000) + 1000;
-    let nuevo = anterior + Math.floor(Math.random() * 10000) - 5000;
-    if (nuevo === anterior) nuevo += 500;
-    return {
-      kpi,
-      fechaActualizacion: `${String(dia).padStart(2, "0")}/${String(mi).padStart(2, "0")}/${año}`,
-      usuario: nombresUsuarios[i % nombresUsuarios.length],
-      datoAnterior: `$${anterior.toLocaleString()}`,
-      datoNuevo: `$${Math.abs(nuevo).toLocaleString()}`,
-      tipo: tipos[i % tipos.length],
-      comentario: comentarios[i],
-    };
-  });
+// Map a RegistroFinanciero (from API) into a DocRow used by this UI
+const registroToDocRow = (r: RegistroFinanciero, idx: number): DocRow => {
+  const fechaIso = r.fecha_ultima_edicion || r.created_at;
+  const d = fechaIso ? new Date(fechaIso) : new Date();
+  const fecha = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  return {
+    id: idx + 1,
+    cadena: r.cadena_name,
+    localizacion: r.sucursal_name,
+    mes: mesNumToName[r.mes] || String(r.mes),
+    año: String(r.año),
+    fecha,
+    usuario: r.editado_por_nombre || "—",
+    cambios: 0,
+    registroId: r.id,
+  };
 };
 
 // Finance detail view data
@@ -139,57 +78,40 @@ const financeColumns = [
   "% Costo", "Utilidad bruta", "% utilidad",
 ];
 const isPercentColumn = (col: string) => col.startsWith("%") || col.includes("% ");
-const mockRows = [
-  ["150000", "32000", "45000", "28000", "30%", "12000", "138000", "89000", "64%", "49000", "35%"],
-];
-const desgloseData: Record<string, { nombre: string; cantidad: string; tipo: string }[]> = {
-  "Ventas brutas": [
-    { nombre: "Venta en comedor", cantidad: "$85000", tipo: "fijo" },
-    { nombre: "Venta para llevar", cantidad: "$35000", tipo: "operativo" },
-    { nombre: "Venta por delivery", cantidad: "$20000", tipo: "operativo" },
-    { nombre: "Eventos privados", cantidad: "$10000", tipo: "extraordinario" },
-  ],
-  "Inventario inicial": [
-    { nombre: "Proteínas y carnes", cantidad: "$12000", tipo: "fijo" },
-    { nombre: "Frutas y verduras", cantidad: "$8000", tipo: "operativo" },
-    { nombre: "Lácteos y huevos", cantidad: "$5000", tipo: "fijo" },
-    { nombre: "Bebidas y licores", cantidad: "$7000", tipo: "fijo" },
-  ],
-  "Compra": [
-    { nombre: "Compra de mariscos", cantidad: "$15000", tipo: "operativo" },
-    { nombre: "Compra de vegetales", cantidad: "$10000", tipo: "operativo" },
-    { nombre: "Insumos de cocina", cantidad: "$8000", tipo: "fijo" },
-    { nombre: "Bebidas alcohólicas", cantidad: "$7000", tipo: "operativo" },
-    { nombre: "Productos de limpieza", cantidad: "$5000", tipo: "fijo" },
-  ],
-  "Inventario final": [
-    { nombre: "Proteínas restantes", cantidad: "$10000", tipo: "fijo" },
-    { nombre: "Verduras en almacén", cantidad: "$6000", tipo: "operativo" },
-    { nombre: "Lácteos en cámara fría", cantidad: "$5000", tipo: "fijo" },
-    { nombre: "Licores en barra", cantidad: "$7000", tipo: "fijo" },
-  ],
-  "Dev Desc a VTA": [
-    { nombre: "Descuento por temporada", cantidad: "$5000", tipo: "extraordinario" },
-    { nombre: "Devolución de platillos", cantidad: "$3000", tipo: "operativo" },
-    { nombre: "Cortesías a clientes", cantidad: "$4000", tipo: "extraordinario" },
-  ],
-  "Venta Neta": [
-    { nombre: "Ingreso neto comedor", cantidad: "$78000", tipo: "fijo" },
-    { nombre: "Ingreso neto delivery", cantidad: "$32000", tipo: "operativo" },
-    { nombre: "Ingreso neto eventos", cantidad: "$28000", tipo: "extraordinario" },
-  ],
-  "Costo venta": [
-    { nombre: "Costo de alimentos", cantidad: "$45000", tipo: "fijo" },
-    { nombre: "Costo de bebidas", cantidad: "$18000", tipo: "operativo" },
-    { nombre: "Merma y desperdicio", cantidad: "$12000", tipo: "operativo" },
-    { nombre: "Empaque para llevar", cantidad: "$8000", tipo: "fijo" },
-    { nombre: "Gas y energéticos", cantidad: "$6000", tipo: "fijo" },
-  ],
-  "Utilidad bruta": [
-    { nombre: "Margen de alimentos", cantidad: "$30000", tipo: "fijo" },
-    { nombre: "Margen de bebidas", cantidad: "$12000", tipo: "operativo" },
-    { nombre: "Margen de eventos", cantidad: "$7000", tipo: "extraordinario" },
-  ],
+
+// Empty row used when no API data is available yet for a registro
+const EMPTY_ROW: string[] = financeColumns.map((c) => (isPercentColumn(c) ? "0%" : "0"));
+
+// Map a RegistroFinanciero into the row of values used by the finance table
+const registroToRowValues = (r?: RegistroFinanciero): string[] => {
+  if (!r) return [...EMPTY_ROW];
+  const fmt = (n: number) => String(Math.round(n || 0));
+  const pct = (n: number) => `${(n || 0).toFixed(0)}%`;
+  return [
+    fmt(r.ventas_brutas),
+    fmt(r.inventario_inicial),
+    fmt(r.compra),
+    fmt(r.inventario_final),
+    pct(r.pct_comp_venta),
+    fmt(r.dev_desc_vta),
+    fmt(r.venta_neta),
+    fmt(r.costo_venta),
+    pct(r.pct_costo),
+    fmt(r.utilidad_bruta),
+    pct(r.pct_utilidad),
+  ];
+};
+
+// Map a financeColumn label to the DesgloseCategoria backend value
+const colToCategoria: Record<string, string> = {
+  "Ventas brutas": "ventas_brutas",
+  "Inventario inicial": "inventario_inicial",
+  "Compra": "compra",
+  "Inventario final": "inventario_final",
+  "Dev Desc a VTA": "dev_desc_vta",
+  "Venta Neta": "venta_neta",
+  "Costo venta": "costo_venta",
+  "Utilidad bruta": "utilidad_bruta",
 };
 
 const MultiCheckDropdown = ({
@@ -266,25 +188,30 @@ interface DesgloseRow {
 
 let desgloseNextId = 1000;
 
-const buildDesgloseRows = (col: string, mes: string, año: string): DesgloseRow[] => {
-  const items = desgloseData[col];
-  if (!items) return [];
-  const mesIdx = parseInt(mesIndex[mes]);
-  return items.map((item, i) => {
-    const amount = parseInt(item.cantidad.replace(/[$,]/g, ""));
-    const anterior = amount + Math.floor(Math.random() * 5000) - 2500;
-    const day = String(Math.min((i + 1) * 5, 28)).padStart(2, "0");
-    return {
-      id: desgloseNextId++,
-      nombre: item.nombre,
-      cantidadNueva: amount,
-      cantidadAnterior: Math.abs(anterior),
-      tipo: item.tipo,
-      comentario: comentarios[i % comentarios.length],
-      usuario: nombresUsuarios[i % nombresUsuarios.length],
-      fecha: `${day}/${String(mesIdx).padStart(2, "0")}/${año}`,
-    };
-  });
+// Map a backend DesgloseLinea[] for a given column into the local DesgloseRow shape used by the UI
+const mapDesglosesToRows = (lineas: DesgloseLinea[], col: string): DesgloseRow[] => {
+  const cat = colToCategoria[col];
+  if (!cat) return [];
+  return lineas
+    .filter((l) => l.categoria === cat)
+    .map((l) => {
+      const fechaIso = l.fecha_generacion || "";
+      let fecha = "—";
+      if (fechaIso) {
+        const d = new Date(fechaIso);
+        fecha = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+      }
+      return {
+        id: desgloseNextId++,
+        nombre: l.nombre,
+        cantidadNueva: l.cantidad,
+        cantidadAnterior: l.cantidad,
+        tipo: l.tipo,
+        comentario: "",
+        usuario: "—",
+        fecha,
+      };
+    });
 };
 
 // Detail view for "Ver archivo"
@@ -301,13 +228,31 @@ const FileDetailView = ({
   cadenaNames: string[];
   localizacionNames: string[];
 }) => {
+  // Fetch this registro's desgloses (when we have a real backend id)
+  const { data: desglosesData } = useDesgloses({ registro_financiero_id: doc.registroId });
+  const allDesgloses: DesgloseLinea[] = Array.isArray(desglosesData) ? desglosesData : [];
+
+  // Fetch sucursales/finanzas to lookup registro values for "added" docs (compared docs)
+  const { data: allFinanzas } = useFinanzas();
+  const finanzasList: RegistroFinanciero[] = Array.isArray(allFinanzas) ? allFinanzas : [];
+
+  const currentRegistro = finanzasList.find((r) => r.id === doc.registroId);
+  const initialRow = registroToRowValues(currentRegistro);
+
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [desgloseRows, setDesgloseRows] = useState<DesgloseRow[]>([]);
-  const [tableValues, setTableValues] = useState<string[]>([...mockRows[0]]);
+  const [tableValues, setTableValues] = useState<string[]>(initialRow);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [duplicateMsg, setDuplicateMsg] = useState<string>("");
   const [filterError, setFilterError] = useState(false);
+
+  // Sync table values once finanzas loads
+  useEffect(() => {
+    if (currentRegistro) setTableValues(registroToRowValues(currentRegistro));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRegistro?.id]);
+
 
   // Filters
   const [fCadena, setFCadena] = useState<string>("");
@@ -339,11 +284,10 @@ const FileDetailView = ({
     setDuplicateMsg("");
     setFilterError(false);
 
-    // Determine which cadenaNames, locs, meses, años to search
     const searchCadenas = fCadena && fCadena !== "__all__" ? [fCadena] : cadenaNames;
     const searchLocs = fLoc && fLoc !== "__all__" ? [fLoc] : localizacionNames;
-    const searchMeses = fMeses.length > 0 ? fMeses : [];
-    const searchAños = fAños.length > 0 ? fAños : [];
+    const searchMeses = fMeses;
+    const searchAños = fAños;
 
     if (searchMeses.length === 0 || searchAños.length === 0) {
       setDuplicateMsg("Selecciona al menos un mes y un año");
@@ -351,43 +295,36 @@ const FileDetailView = ({
       return;
     }
 
-    // Generate docs for all combinations
-    const generatedDocs: DocRow[] = [];
-    for (const c of searchCadenas) {
-      for (const l of searchLocs) {
-        for (const m of searchMeses) {
-          for (const a of searchAños) {
-            // Skip if it's the current doc
-            if (c === doc.cadena && l === doc.localizacion && m === doc.mes && a === doc.año) continue;
-            generatedDocs.push({
-              id: nextId++,
-              cadena: c,
-              localizacion: l,
-              mes: m,
-              año: a,
-              fecha: generarFecha(m, a, Math.floor(Math.random() * 28) + 1),
-              usuario: nombresUsuarios[Math.floor(Math.random() * nombresUsuarios.length)],
-              cambios: Math.floor(Math.random() * 200) + 50,
-            });
-          }
-        }
-      }
-    }
+    // Find matching registros from real backend data
+    const mesNumbers = searchMeses.map((m) => parseInt(mesIndex[m]));
+    const añoNumbers = searchAños.map((a) => parseInt(a));
+    const matched = finanzasList.filter(
+      (r) =>
+        r.id !== doc.registroId &&
+        searchCadenas.includes(r.cadena_name) &&
+        searchLocs.includes(r.sucursal_name) &&
+        mesNumbers.includes(r.mes) &&
+        añoNumbers.includes(r.año)
+    );
 
-    // Check for duplicates against already added docs
-    const existingKeys = new Set(addedDocs.map((r) => `${r.cadena}-${r.localizacion}-${r.mes}-${r.año}`));
-    // Also check the main doc
-    existingKeys.add(`${doc.cadena}-${doc.localizacion}-${doc.mes}-${doc.año}`);
-    const newOnes = generatedDocs.filter((d) => !existingKeys.has(`${d.cadena}-${d.localizacion}-${d.mes}-${d.año}`));
+    const generatedDocs: DocRow[] = matched.map((r, i) => registroToDocRow(r, nextId + i));
+    nextId += matched.length;
+
+    const existingKeys = new Set(addedDocs.map((r) => r.registroId));
+    existingKeys.add(doc.registroId);
+    const newOnes = generatedDocs.filter((d) => !existingKeys.has(d.registroId));
 
     if (newOnes.length === 0) {
-      setDuplicateMsg("Esta tabla ya ha sido seleccionada");
+      setDuplicateMsg("No hay nuevos archivos para los filtros seleccionados");
       setFilterError(true);
       return;
     }
 
     const newValues: Record<number, string[]> = {};
-    newOnes.forEach((d) => { newValues[d.id] = [...mockRows[0]]; });
+    newOnes.forEach((d) => {
+      const reg = finanzasList.find((r) => r.id === d.registroId);
+      newValues[d.id] = registroToRowValues(reg);
+    });
     setAddedTableValues((pv) => ({ ...pv, ...newValues }));
     setAddedDocs((prev) => [...prev, ...newOnes]);
   };
@@ -398,18 +335,20 @@ const FileDetailView = ({
   const handleOpenDesglose = (col: string) => {
     if (desgloseCol === col) { setDesgloseCol(null); return; }
     setDesgloseCol(col);
-    setDesgloseRows(buildDesgloseRows(col, doc.mes, doc.año));
+    setDesgloseRows(mapDesglosesToRows(allDesgloses, col));
     setAddedDesgloseCol(null);
   };
 
-  const handleOpenAddedDesglose = (docId: number, col: string, addedDoc: DocRow) => {
+  const handleOpenAddedDesglose = (docId: number, col: string, _addedDoc: DocRow) => {
     if (addedDesgloseCol?.docId === docId && addedDesgloseCol?.col === col) {
       setAddedDesgloseCol(null); return;
     }
     setAddedDesgloseCol({ docId, col });
-    setAddedDesgloseRows(buildDesgloseRows(col, addedDoc.mes, addedDoc.año));
+    // Desgloses of compared docs are not preloaded; show empty until extended
+    setAddedDesgloseRows([]);
     setDesgloseCol(null);
   };
+
 
   const getColIndex = (col: string) => financeColumns.indexOf(col);
 
@@ -428,7 +367,7 @@ const FileDetailView = ({
     const idx = getColIndex(col);
     if (idx < 0) return;
     setAddedTableValues((prev) => {
-      const vals = [...(prev[docId] || mockRows[0])];
+      const vals = [...(prev[docId] || EMPTY_ROW)];
       const current = parseInt(vals[idx].replace(/[%$,]/g, "")) || 0;
       vals[idx] = String(current + delta);
       return { ...prev, [docId]: vals };
@@ -719,7 +658,7 @@ const FileDetailView = ({
 
       {/* Added doc tables */}
       {addedDocs.map((ad) => {
-        const vals = addedTableValues[ad.id] || [...mockRows[0]];
+        const vals = addedTableValues[ad.id] || [...EMPTY_ROW];
         const isActiveDesglose = addedDesgloseCol?.docId === ad.id;
         return (
           <div key={ad.id}>
@@ -759,16 +698,31 @@ const FinanceDupPage = () => {
   const [mode, setMode] = useState<"existente" | "nuevo">("existente");
   const [expandedCambios, setExpandedCambios] = useState<number | null>(null);
   const [expandedComentario, setExpandedComentario] = useState<number | null>(null);
-  const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([...baseMockDocs]);
-  const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
 
   const { data: cadenasData } = useCadenas({ is_active: true });
   const { data: sucursalesData } = useSucursales({ is_active: true });
+  const { data: finanzasData } = useFinanzas();
   const cadenaNames = (Array.isArray(cadenasData) ? cadenasData : []).map((c: Cadena) => c.name);
   const localizacionNames = [...new Set((Array.isArray(sucursalesData) ? sucursalesData : []).map((s: Sucursal) => s.localizacion))];
+  const finanzasList: RegistroFinanciero[] = Array.isArray(finanzasData) ? finanzasData : [];
+
+  // Build the existente list from API; allow local manipulation (delete, duplicate)
+  const apiExistenteDocs = finanzasList.map((r, i) => registroToDocRow(r, i));
+  const [existenteDocs, setExistenteDocs] = useState<DocRow[]>([]);
+  const [nuevosArchivos, setNuevosArchivos] = useState<DocRow[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!hydrated && apiExistenteDocs.length > 0) {
+      setExistenteDocs(apiExistenteDocs);
+      setHydrated(true);
+    }
+  }, [apiExistenteDocs, hydrated]);
+
   const [viewingDoc, setViewingDoc] = useState<DocRow | null>(null);
   const [mainDuplicateMsg, setMainDuplicateMsg] = useState<string>("");
   const [mainFilterError, setMainFilterError] = useState(false);
+
 
   const getFilteredDocs = (docs: DocRow[]) =>
     docs.filter((doc) => {
@@ -1037,11 +991,10 @@ const FinanceDupPage = () => {
         </Table>
       </div>
 
-      {/* Cambios detail table */}
+      {/* Cambios detail — pendiente de endpoint de auditoría en backend */}
       {expandedCambios !== null && (() => {
         const doc = displayExistente.find((d) => d.id === expandedCambios);
         if (!doc) return null;
-        const cambiosData = generarCambios(doc.mes, doc.año);
         return (
           <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md mb-8">
             <div className="flex items-center justify-between p-4 border-b border-border">
@@ -1056,41 +1009,9 @@ const FinanceDupPage = () => {
                 Close
               </Button>
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-secondary">
-                  <TableHead className="font-semibold text-foreground">KPI</TableHead>
-                  <TableHead className="font-semibold text-foreground">Fecha de actualización</TableHead>
-                  <TableHead className="font-semibold text-foreground">Usuario que actualizó</TableHead>
-                  <TableHead className="font-semibold text-foreground">Dato anterior</TableHead>
-                  <TableHead className="font-semibold text-foreground">Dato nuevo</TableHead>
-                  <TableHead className="font-semibold text-foreground">Tipo</TableHead>
-                  <TableHead className="font-semibold text-foreground">Comentario</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {cambiosData.map((row, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="text-foreground text-sm">{row.kpi}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.fechaActualizacion}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.usuario}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.datoAnterior}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.datoNuevo}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.tipo}</TableCell>
-                    <TableCell className="text-sm max-w-[200px]">
-                      <button
-                        onClick={() => setExpandedComentario(expandedComentario === i ? null : i)}
-                        className="text-left text-muted-foreground hover:text-foreground"
-                      >
-                        {expandedComentario === i
-                          ? row.comentario
-                          : row.comentario.slice(0, 30) + "..."}
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="p-8 text-center text-muted-foreground text-sm">
+              El historial detallado de cambios aún no está disponible en el backend.
+            </div>
           </div>
         );
       })()}
