@@ -284,11 +284,10 @@ const FileDetailView = ({
     setDuplicateMsg("");
     setFilterError(false);
 
-    // Determine which cadenaNames, locs, meses, años to search
     const searchCadenas = fCadena && fCadena !== "__all__" ? [fCadena] : cadenaNames;
     const searchLocs = fLoc && fLoc !== "__all__" ? [fLoc] : localizacionNames;
-    const searchMeses = fMeses.length > 0 ? fMeses : [];
-    const searchAños = fAños.length > 0 ? fAños : [];
+    const searchMeses = fMeses;
+    const searchAños = fAños;
 
     if (searchMeses.length === 0 || searchAños.length === 0) {
       setDuplicateMsg("Selecciona al menos un mes y un año");
@@ -296,43 +295,36 @@ const FileDetailView = ({
       return;
     }
 
-    // Generate docs for all combinations
-    const generatedDocs: DocRow[] = [];
-    for (const c of searchCadenas) {
-      for (const l of searchLocs) {
-        for (const m of searchMeses) {
-          for (const a of searchAños) {
-            // Skip if it's the current doc
-            if (c === doc.cadena && l === doc.localizacion && m === doc.mes && a === doc.año) continue;
-            generatedDocs.push({
-              id: nextId++,
-              cadena: c,
-              localizacion: l,
-              mes: m,
-              año: a,
-              fecha: generarFecha(m, a, Math.floor(Math.random() * 28) + 1),
-              usuario: nombresUsuarios[Math.floor(Math.random() * nombresUsuarios.length)],
-              cambios: Math.floor(Math.random() * 200) + 50,
-            });
-          }
-        }
-      }
-    }
+    // Find matching registros from real backend data
+    const mesNumbers = searchMeses.map((m) => parseInt(mesIndex[m]));
+    const añoNumbers = searchAños.map((a) => parseInt(a));
+    const matched = finanzasList.filter(
+      (r) =>
+        r.id !== doc.registroId &&
+        searchCadenas.includes(r.cadena_name) &&
+        searchLocs.includes(r.sucursal_name) &&
+        mesNumbers.includes(r.mes) &&
+        añoNumbers.includes(r.año)
+    );
 
-    // Check for duplicates against already added docs
-    const existingKeys = new Set(addedDocs.map((r) => `${r.cadena}-${r.localizacion}-${r.mes}-${r.año}`));
-    // Also check the main doc
-    existingKeys.add(`${doc.cadena}-${doc.localizacion}-${doc.mes}-${doc.año}`);
-    const newOnes = generatedDocs.filter((d) => !existingKeys.has(`${d.cadena}-${d.localizacion}-${d.mes}-${d.año}`));
+    const generatedDocs: DocRow[] = matched.map((r, i) => registroToDocRow(r, nextId + i));
+    nextId += matched.length;
+
+    const existingKeys = new Set(addedDocs.map((r) => r.registroId));
+    existingKeys.add(doc.registroId);
+    const newOnes = generatedDocs.filter((d) => !existingKeys.has(d.registroId));
 
     if (newOnes.length === 0) {
-      setDuplicateMsg("Esta tabla ya ha sido seleccionada");
+      setDuplicateMsg("No hay nuevos archivos para los filtros seleccionados");
       setFilterError(true);
       return;
     }
 
     const newValues: Record<number, string[]> = {};
-    newOnes.forEach((d) => { newValues[d.id] = [...mockRows[0]]; });
+    newOnes.forEach((d) => {
+      const reg = finanzasList.find((r) => r.id === d.registroId);
+      newValues[d.id] = registroToRowValues(reg);
+    });
     setAddedTableValues((pv) => ({ ...pv, ...newValues }));
     setAddedDocs((prev) => [...prev, ...newOnes]);
   };
@@ -343,18 +335,20 @@ const FileDetailView = ({
   const handleOpenDesglose = (col: string) => {
     if (desgloseCol === col) { setDesgloseCol(null); return; }
     setDesgloseCol(col);
-    setDesgloseRows(buildDesgloseRows(col, doc.mes, doc.año));
+    setDesgloseRows(mapDesglosesToRows(allDesgloses, col));
     setAddedDesgloseCol(null);
   };
 
-  const handleOpenAddedDesglose = (docId: number, col: string, addedDoc: DocRow) => {
+  const handleOpenAddedDesglose = (docId: number, col: string, _addedDoc: DocRow) => {
     if (addedDesgloseCol?.docId === docId && addedDesgloseCol?.col === col) {
       setAddedDesgloseCol(null); return;
     }
     setAddedDesgloseCol({ docId, col });
-    setAddedDesgloseRows(buildDesgloseRows(col, addedDoc.mes, addedDoc.año));
+    // Desgloses of compared docs are not preloaded; show empty until extended
+    setAddedDesgloseRows([]);
     setDesgloseCol(null);
   };
+
 
   const getColIndex = (col: string) => financeColumns.indexOf(col);
 
