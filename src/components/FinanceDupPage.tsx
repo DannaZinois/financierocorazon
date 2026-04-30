@@ -991,11 +991,10 @@ const FinanceDupPage = () => {
         </Table>
       </div>
 
-      {/* Cambios detail table */}
+      {/* Cambios detail — pendiente de endpoint de auditoría en backend */}
       {expandedCambios !== null && (() => {
         const doc = displayExistente.find((d) => d.id === expandedCambios);
         if (!doc) return null;
-        const cambiosData = generarCambios(doc.mes, doc.año);
         return (
           <div className="bg-card rounded-lg border border-border overflow-hidden shadow-md mb-8">
             <div className="flex items-center justify-between p-4 border-b border-border">
@@ -1010,41 +1009,9 @@ const FinanceDupPage = () => {
                 Close
               </Button>
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-secondary">
-                  <TableHead className="font-semibold text-foreground">KPI</TableHead>
-                  <TableHead className="font-semibold text-foreground">Fecha de actualización</TableHead>
-                  <TableHead className="font-semibold text-foreground">Usuario que actualizó</TableHead>
-                  <TableHead className="font-semibold text-foreground">Dato anterior</TableHead>
-                  <TableHead className="font-semibold text-foreground">Dato nuevo</TableHead>
-                  <TableHead className="font-semibold text-foreground">Tipo</TableHead>
-                  <TableHead className="font-semibold text-foreground">Comentario</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {cambiosData.map((row, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="text-foreground text-sm">{row.kpi}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.fechaActualizacion}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.usuario}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.datoAnterior}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.datoNuevo}</TableCell>
-                    <TableCell className="text-foreground text-sm">{row.tipo}</TableCell>
-                    <TableCell className="text-sm max-w-[200px]">
-                      <button
-                        onClick={() => setExpandedComentario(expandedComentario === i ? null : i)}
-                        className="text-left text-muted-foreground hover:text-foreground"
-                      >
-                        {expandedComentario === i
-                          ? row.comentario
-                          : row.comentario.slice(0, 30) + "..."}
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="p-8 text-center text-muted-foreground text-sm">
+              El historial detallado de cambios aún no está disponible en el backend.
+            </div>
           </div>
         );
       })()}
