@@ -367,7 +367,7 @@ const FileDetailView = ({
     const idx = getColIndex(col);
     if (idx < 0) return;
     setAddedTableValues((prev) => {
-      const vals = [...(prev[docId] || mockRows[0])];
+      const vals = [...(prev[docId] || EMPTY_ROW)];
       const current = parseInt(vals[idx].replace(/[%$,]/g, "")) || 0;
       vals[idx] = String(current + delta);
       return { ...prev, [docId]: vals };
