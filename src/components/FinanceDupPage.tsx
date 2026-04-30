@@ -24,8 +24,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCadenas, useSucursales, useFinanzas } from "@/hooks/useApiData";
-import type { Sucursal, Cadena, RegistroFinanciero } from "@/types/api.types";
+import { useCadenas, useSucursales, useFinanzas, useDesgloses } from "@/hooks/useApiData";
+import type { Sucursal, Cadena, RegistroFinanciero, DesgloseLinea } from "@/types/api.types";
 
 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const años = ["2024", "2025", "2026"];
