@@ -658,7 +658,7 @@ const FileDetailView = ({
 
       {/* Added doc tables */}
       {addedDocs.map((ad) => {
-        const vals = addedTableValues[ad.id] || [...mockRows[0]];
+        const vals = addedTableValues[ad.id] || [...EMPTY_ROW];
         const isActiveDesglose = addedDesgloseCol?.docId === ad.id;
         return (
           <div key={ad.id}>
