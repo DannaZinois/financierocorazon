@@ -114,6 +114,106 @@ const colToCategoria: Record<string, string> = {
   "Utilidad bruta": "utilidad_bruta",
 };
 
+const MultiCheckDropdown = ({
+  label,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const toggle = (val: string) => {
+    onChange(
+      selected.includes(val) ? selected.filter((x) => x !== val) : [...selected, val]
+    );
+  };
+
+  return (
+    <div ref={ref} className="relative min-w-[180px]">
+      <div className="flex items-center gap-1 mb-2 text-sm font-semibold text-foreground">
+        {label} <Filter className="w-3.5 h-3.5" />
+      </div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full border border-input rounded-md bg-background px-3 py-2 text-sm"
+      >
+        <span className="truncate text-muted-foreground">
+          {selected.length > 0 ? selected.join(", ") : "Selecciona"}
+        </span>
+        <ChevronDown className="w-4 h-4 opacity-50" />
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 w-full border border-input rounded-md bg-popover shadow-lg p-2 max-h-48 overflow-auto space-y-1">
+          {options.map((o) => (
+            <label key={o} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-accent rounded px-1 py-0.5">
+              <input
+                type="checkbox"
+                checked={selected.includes(o)}
+                onChange={() => toggle(o)}
+                className="accent-primary"
+              />
+              {o}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface DesgloseRow {
+  id: number;
+  nombre: string;
+  cantidadNueva: number;
+  cantidadAnterior: number;
+  tipo: string;
+  comentario: string;
+  usuario: string;
+  fecha: string;
+}
+
+let desgloseNextId = 1000;
+
+// Map a backend DesgloseLinea[] for a given column into the local DesgloseRow shape used by the UI
+const mapDesglosesToRows = (lineas: DesgloseLinea[], col: string): DesgloseRow[] => {
+  const cat = colToCategoria[col];
+  if (!cat) return [];
+  return lineas
+    .filter((l) => l.categoria === cat)
+    .map((l) => {
+      const fechaIso = l.fecha_generacion || "";
+      let fecha = "—";
+      if (fechaIso) {
+        const d = new Date(fechaIso);
+        fecha = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+      }
+      return {
+        id: desgloseNextId++,
+        nombre: l.nombre,
+        cantidadNueva: l.cantidad,
+        cantidadAnterior: l.cantidad,
+        tipo: l.tipo,
+        comentario: "",
+        usuario: "—",
+        fecha,
+      };
+    });
+};
+
 // Detail view for "Ver archivo"
 const FileDetailView = ({
   doc,
