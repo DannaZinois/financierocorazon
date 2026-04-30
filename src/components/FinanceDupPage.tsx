@@ -228,13 +228,31 @@ const FileDetailView = ({
   cadenaNames: string[];
   localizacionNames: string[];
 }) => {
+  // Fetch this registro's desgloses (when we have a real backend id)
+  const { data: desglosesData } = useDesgloses({ registro_financiero_id: doc.registroId });
+  const allDesgloses: DesgloseLinea[] = Array.isArray(desglosesData) ? desglosesData : [];
+
+  // Fetch sucursales/finanzas to lookup registro values for "added" docs (compared docs)
+  const { data: allFinanzas } = useFinanzas();
+  const finanzasList: RegistroFinanciero[] = Array.isArray(allFinanzas) ? allFinanzas : [];
+
+  const currentRegistro = finanzasList.find((r) => r.id === doc.registroId);
+  const initialRow = registroToRowValues(currentRegistro);
+
   const [desgloseCol, setDesgloseCol] = useState<string | null>(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [desgloseRows, setDesgloseRows] = useState<DesgloseRow[]>([]);
-  const [tableValues, setTableValues] = useState<string[]>([...mockRows[0]]);
+  const [tableValues, setTableValues] = useState<string[]>(initialRow);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [duplicateMsg, setDuplicateMsg] = useState<string>("");
   const [filterError, setFilterError] = useState(false);
+
+  // Sync table values once finanzas loads
+  useEffect(() => {
+    if (currentRegistro) setTableValues(registroToRowValues(currentRegistro));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRegistro?.id]);
+
 
   // Filters
   const [fCadena, setFCadena] = useState<string>("");
